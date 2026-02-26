@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GuideMe.AI - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B5CF6",
+              primaryDark: "#7C3AED",
+              bgLight: "#F3F4F6",
+              sidebarBg: "#FFFFFF",
+              textDark: "#1F2937",
+              textGray: "#6B7280",
+            },
+            fontFamily: {
+              sans: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #c7c7c7;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .sidebar-collapsed {
+        width: 80px !important;
+      }
+
+      .sidebar-collapsed .hide-on-collapse {
+        display: none;
+      }
+
+      .sidebar-collapsed .center-on-collapse {
+        justify-content: center;
+      }
+
+      .main-expanded {
+        margin-left: 80px !important;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body class="bg-bgLight text-textDark font-sans overflow-x-hidden">
+    <!-- Tutor Chat Modal -->
+    <!-- Floating Button -->
+<button
+  id="tutorToggleBtn"
+  onclick="toggleTutorChat()"
+  class="fixed bottom-6 right-6 bg-purple-500 text-white p-4 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110 hover:rotate-6"
+>
+  <i class="fa-solid fa-robot text-xl"></i>
+</button>
+
+<!-- Chat Box -->
+<div
+  id="tutorChat"
+  class="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-50 opacity-0 scale-95 pointer-events-none transition-all duration-300"
+>
+  <!-- Header -->
+  <div class="bg-purple-500 text-white p-4 flex justify-between items-center">
+    <h4 class="font-semibold">AI Tutor 🤖</h4>
+    <button onclick="toggleTutorChat()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Messages Area -->
+  <div
+    id="chatMessages"
+    class="flex-1 p-4 overflow-y-auto text-sm space-y-3 bg-gray-50"
+  >
+    <div class="text-gray-500">
+      Hi 👋 I'm your Tutor. Ask anything about your course!
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="p-3 border-t flex gap-2">
+    <input
+      type="text"
+      id="chatInput"
+      placeholder="Ask something..."
+      class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
+      onkeypress="handleEnter(event)"
+      autocomplete="off"
+    />
+    <button
+      onclick="sendMessage()"
+      class="bg-purple-600 text-white px-4 rounded-lg"
+    >
+      Send
+    </button>
+  </div>
+</div>
+
+    <div class="flex h-screen">
+      <aside
+        id="sidebar"
+        class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-50 transition-all duration-300"
+      >
+        <div
+          class="p-6 flex items-center gap-3 font-bold text-xl text-gray-800 center-on-collapse"
+        >
+          <div
+            class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md flex-shrink-0"
+          >
+            H
+          </div>
+          <span class="hide-on-collapse">GuideMe.AI</span>
+        </div>
+
+        <div class="px-4 mb-6 center-on-collapse flex">
+          <button
+            onclick="showSection('create')"
+            class="w-full bg-primary hover:bg-primaryDark text-white py-3 rounded-xl font-semibold shadow-lg shadow-violet-200 transition-all flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-plus"></i>
+            <span class="hide-on-collapse">New Course</span>
+          </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto">
+          <ul class="space-y-1 px-2">
+            <li>
+              <a
+                href="#"
+                onclick="showSection('dashboard')"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse active"
+                ><i class="fa-solid fa-grip w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Dashboard</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showSection('learning')"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+                ><i class="fa-solid fa-book-open w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">My Learning</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showSection('explore')"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+                ><i class="fa-solid fa-compass w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Explore</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+                ><i class="fa-solid fa-receipt w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Billing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showSection('profile')"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+              >
+                <i class="fa-solid fa-user w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Profile</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100 center-on-collapse flex">
+          <a
+            href="#"
+            onclick="handleLogout()"
+            class="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors w-full justify-center md:justify-start"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="hide-on-collapse font-medium">Logout</span>
+          </a>
+        </div>
+      </aside>
+
+      <main
+        id="mainContent"
+        class="flex-1 ml-64 p-8 transition-all duration-300"
+      >
+        <header class="flex justify-between items-center mb-8 relative">
+          <button
+            onclick="toggleSidebar()"
+            class="text-gray-500 hover:text-gray-800 text-xl p-2"
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+
+          <div class="flex items-center gap-4">
+            <div class="relative">
+              <button
+                onclick="toggleNotifications()"
+                class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-500 hover:text-primary flex items-center justify-center relative"
+              >
+                <i class="fa-solid fa-bell"></i>
+                <span
+                  id="notifDot"
+                  class="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white rounded-full hidden"
+                ></span>
+              </button>
+
+              <div
+                id="notificationDropdown"
+                class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl border border-gray-100 hidden z-50 overflow-hidden"
+              >
+                <div
+                  class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center"
+                >
+                  <h4 class="font-bold text-gray-700 text-sm">Notifications</h4>
+                  <span
+                    id="notifCount"
+                    class="text-xs bg-primary text-white px-2 py-0.5 rounded-full"
+                    >0</span
+                  >
+                </div>
+                <div id="notifList" class="max-h-64 overflow-y-auto">
+                  <div class="p-4 text-center text-gray-400 text-xs">
+                    No new notifications
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="userAvatar"
+              class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer"
+            >
+              U
+            </div>
+          </div>
+        </header>
+
+        <div id="section-dashboard" class="content-section fade-in">
+          <div
+            class="bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl p-8 text-white shadow-xl shadow-violet-200 mb-8 relative overflow-hidden"
+          >
+            <div
+              class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full transform translate-x-1/2 -translate-y-1/2"
+            ></div>
+            <div class="relative z-10">
+              <h1 class="text-3xl font-bold mb-2">
+                Welcome Back,
+                <span id="userName" class="text-white">User</span>
+              </h1>
+              <p class="text-violet-100 opacity-90">
+                Continue your learning journey or create something new.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">Your Courses</h3>
+            <button
+              onclick="openCommunityModal()"
+              class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-primary rounded-xl shadow-sm hover:shadow-md hover:bg-violet-50 transition-all text-sm font-semibold"
+            >
+              <i class="fa-solid fa-globe"></i> Community Hub
+            </button>
+          </div>
+
+          <div
+            id="courseGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+
+          <!-- Floating Tutor Button (Only Dashboard) -->
+          <button
+            id="tutorBtn"
+            onclick="toggleTutorChat()"
+            class="fixed bottom-6 right-6 z-50 bg-primary hover:bg-primaryDark text-white w-14 h-14 rounded-full shadow-xl shadow-violet-200 flex items-center justify-center transition-all duration-300 hover:scale-110 hidden"
+          >
+            <i class="fa-solid fa-robot text-lg"></i>
+          </button>
+        </div>
+
+        <div id="section-explore" class="content-section hidden fade-in">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Explore For You</h2>
+            <p class="text-gray-500 mt-1">
+              Curated roadmaps based on your interest:
+              <span
+                id="userInterestLabel"
+                class="font-bold text-primary uppercase"
+                >Loading...</span
+              >
+            </p>
+          </div>
+
+          <div
+            id="exploreGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <div class="col-span-full text-center py-12 text-gray-400">
+              <i
+                class="fa-solid fa-wand-magic-sparkles fa-spin text-2xl mb-2"
+              ></i>
+              <p>AI is curating ideas for you...</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-create" class="content-section hidden fade-in">
+          <div
+            class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-10"
+          >
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">
+              Create New Course
+            </h2>
+            <div class="space-y-6">
+              <div>
+                <label
+                  class="block text-gray-600 font-medium mb-2 text-sm uppercase tracking-wide"
+                >
+                  Course Topic
+                </label>
+                <input
+                  type="text"
+                  id="courseTopic"
+                  class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-violet-100"
+                  placeholder="e.g. Advanced Python"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block text-gray-600 font-medium mb-2 text-sm uppercase tracking-wide"
+                >
+                  Number of Chapters
+                </label>
+                <input
+                  type="number"
+                  id="numChapters"
+                  value="5"
+                  min="3"
+                  max="10"
+                  class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-violet-100"
+                />
+              </div>
+
+              <div>
+                <div class="flex justify-between items-end mb-2">
+                  <label
+                    class="block text-gray-600 font-medium text-sm uppercase tracking-wide"
+                  >
+                    Custom Topics
+                  </label>
+                  <span
+                    id="topicCounter"
+                    class="text-xs font-semibold text-primary bg-violet-50 px-2 py-1 rounded-md"
+                  >
+                    0/5 Added
+                  </span>
+                </div>
+
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    id="topicInput"
+                    class="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-violet-100"
+                    placeholder="e.g. Intro to Syntax"
+                  />
+
+                  <button
+                    type="button"
+                    onclick="addCustomTopic()"
+                    class="bg-gray-800 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-95"
+                  >
+                    <i class="fa-solid fa-plus mr-1"></i> Add
+                  </button>
+                </div>
+
+                <div
+                  id="topicsContainer"
+                  class="flex gap-2 overflow-x-auto mt-4 pb-2 scrollbar-hide w-full"
+                ></div>
+
+                <p class="text-xs text-gray-500 mt-2">
+                  Leave blank to let AI generate the chapters automatically.
+                </p>
+              </div>
+
+              <button
+                onclick="generateOutline()"
+                class="create-submit-btn w-full bg-primary hover:bg-primaryDark text-white py-4 rounded-xl font-bold shadow-lg shadow-violet-200 transition-all mt-4 flex justify-center items-center gap-2"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Outline
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="section-outline" class="content-section hidden fade-in pb-24">
+          <div class="max-w-4xl mx-auto">
+            <div
+              class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex gap-6 items-center mb-8"
+            >
+              <div class="flex-1">
+                <h1
+                  id="outline-title"
+                  class="text-2xl font-bold text-gray-800 mb-2"
+                >
+                  Title
+                </h1>
+                <p id="outline-desc" class="text-gray-500 text-sm mb-4">
+                  Desc...
+                </p>
+                <div class="flex gap-3 text-sm font-medium text-gray-600">
+                  <span
+                    class="bg-gray-100 px-3 py-1 rounded-md flex items-center gap-2"
+                    ><i class="fa-regular fa-clock"></i>
+                    <span id="outline-duration">2h</span></span
+                  >
+                  <span
+                    class="bg-gray-100 px-3 py-1 rounded-md flex items-center gap-2"
+                    ><i class="fa-solid fa-book-open"></i>
+                    <span id="outline-chapters">5 Ch</span></span
+                  >
+                  <span
+                    class="bg-gray-100 px-3 py-1 rounded-md flex items-center gap-2"
+                    ><i class="fa-solid fa-chart-line"></i>
+                    <span id="outline-level">Beginner</span></span
+                  >
+                </div>
+              </div>
+              <div
+                class="w-32 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-4xl text-gray-300"
+              >
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+            </div>
+            <h2 class="text-center text-xl font-bold text-gray-700 mb-8">
+              Course Roadmap
+            </h2>
+            <div
+              id="roadmap-container"
+              class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent"
+            ></div>
+          </div>
+          <div
+            class="fixed bottom-0 left-0 md:left-64 right-0 bg-white p-4 border-t border-gray-200 flex justify-end gap-4 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-40"
+          >
+            <button
+              onclick="showSection('create')"
+              class="px-6 py-2 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="confirmAndGenerate()"
+              class="confirm-generate-btn px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primaryDark shadow-lg shadow-violet-200 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-check"></i> Generate Full Course
+            </button>
+          </div>
+        </div>
+
+        <div id="section-profile" class="content-section hidden fade-in">
+          <div
+            class="relative overflow-hidden bg-white rounded-3xl shadow-lg border border-gray-100 mb-8"
+          >
+            <div
+              class="h-32 bg-gradient-to-r from-violet-500 to-purple-600"
+            ></div>
+
+            <div class="px-8 pb-8 relative">
+              <div
+                class="flex flex-col md:flex-row items-start md:items-end -mt-12 gap-6"
+              >
+                <div class="w-24 h-24 rounded-2xl bg-white p-1 shadow-xl">
+                  <div
+                    class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-3xl font-bold text-white shadow-inner"
+                    id="profileAvatar"
+                  >
+                    U
+                  </div>
+                </div>
+
+                <div class="flex-1 mb-2">
+                  <h1 class="text-3xl font-bold text-gray-800" id="profileName">
+                    Loading...
+                  </h1>
+                  <p class="text-gray-500 font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-gray-400"></i>
+                    <span id="profileEmail">user@example.com</span>
+                  </p>
+                </div>
+
+                <div class="mb-2">
+                  <span
+                    class="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-1"
+                    >Primary Interest</span
+                  >
+                  <div
+                    class="px-4 py-2 bg-violet-50 text-primary border border-violet-100 rounded-xl font-bold flex items-center gap-2 shadow-sm"
+                  >
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span id="profileInterest">Technology</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div
+              class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-book-open"></i>
+              </div>
+              <div>
+                <p class="text-gray-400 text-xs font-bold uppercase">
+                  Total Courses
+                </p>
+                <h3
+                  class="text-2xl font-bold text-gray-800"
+                  id="profileCourseCount"
+                >
+                  0
+                </h3>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-check-circle"></i>
+              </div>
+              <div>
+                <p class="text-gray-400 text-xs font-bold uppercase">
+                  Completed
+                </p>
+                <h3
+                  class="text-2xl font-bold text-gray-800"
+                  id="profileCompletedCount"
+                >
+                  0
+                </h3>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-xl"
+              >
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div>
+                <p class="text-gray-400 text-xs font-bold uppercase">
+                  Learning Streak
+                </p>
+                <h3 class="text-2xl font-bold text-gray-800">3 Days</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-6 flex items-center justify-between">
+            <h3 class="text-xl font-bold text-gray-800">
+              My Generated Library 📚
+            </h3>
+          </div>
+
+          <div
+            id="profileCoursesList"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <div class="col-span-full py-12 text-center text-gray-400">
+              <i class="fa-solid fa-spinner fa-spin text-2xl"></i> Loading...
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="section-learning"
+          class="content-section hidden fade-in h-[calc(100vh-100px)]"
+        >
+          <div class="flex items-center gap-4 mb-4">
+            <button
+              onclick="showSection('dashboard')"
+              class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+            >
+              <i class="fa-solid fa-arrow-left mr-1"></i> Back
+            </button>
+            <h2
+              id="learning-course-title"
+              class="text-lg font-bold text-gray-800 truncate"
+            >
+              Loading...
+            </h2>
+          </div>
+          <div
+            class="flex flex-col md:flex-row h-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+          >
+            <aside
+              class="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full"
+            >
+              <div
+                class="p-4 border-b border-gray-200 font-semibold text-gray-700"
+              >
+                Course Content
+              </div>
+              <ul
+                id="chapter-list"
+                class="flex-1 overflow-y-auto p-2 space-y-1"
+              ></ul>
+            </aside>
+            <section class="flex-1 p-8 overflow-y-auto" id="lesson-container">
+              <h1
+                id="lesson-title"
+                class="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100"
+              >
+                Select a Chapter
+              </h1>
+              <div
+                id="lesson-body"
+                class="prose max-w-none text-gray-600 space-y-6"
+              >
+                <div
+                  class="flex flex-col items-center justify-center h-64 text-gray-400"
+                >
+                  <i class="fa-regular fa-circle-play text-4xl mb-3"></i>
+                  <p>
+                    Click on a chapter from the left sidebar to start learning.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div
+      id="communityModal"
+      class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center backdrop-blur-sm fade-in"
+    >
+      <div
+        class="bg-white w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden m-4"
+      >
+        <div
+          class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-gray-800">
+              Community Library 🌍
+            </h2>
+            <p class="text-sm text-gray-500">
+              Browse courses created by other students.
+            </p>
+          </div>
+          <button
+            onclick="closeCommunityModal()"
+            class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div
+          id="communityGrid"
+          class="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-bgLight flex-1"
+        ></div>
+      </div>
+    </div>
+
+    <div
+      id="previewModal"
+      class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 fade-in"
+    >
+      <div
+        class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden"
+      >
+        <div
+          class="p-6 border-b border-gray-100 flex justify-between items-center"
+        >
+          <h3 id="previewTitle" class="text-xl font-bold text-gray-800">
+            Course Title
+          </h3>
+          <button
+            onclick="
+              document.getElementById('previewModal').classList.add('hidden')
+            "
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <div class="p-6 max-h-[60vh] overflow-y-auto" id="previewContent"></div>
+        <div
+          class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3"
+        >
+          <button
+            onclick="
+              document.getElementById('previewModal').classList.add('hidden')
+            "
+            class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg"
+          >
+            Close
+          </button>
+          <button
+            id="requestBtn"
+            class="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primaryDark shadow-lg shadow-violet-200 flex items-center gap-2"
+          >
+            Request Access <i class="fa-regular fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="videoModal"
+      class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/80 backdrop-blur-[8px] transition-all duration-300 opacity-0 pointer-events-none"
+      onclick="if (event.target === this) closeVideoModal();"
+    >
+      <div
+        class="relative w-full max-w-5xl mx-4 aspect-video bg-gray-900/50 rounded-[2rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)] border border-white/10 transform scale-[0.95] transition-all duration-300"
+        id="videoModalContainer"
+      >
+        <button
+          onclick="closeVideoModal()"
+          class="absolute top-5 right-5 z-50 w-11 h-11 flex items-center justify-center rounded-full bg-black/30 text-white/80 hover:text-white hover:bg-black/60 backdrop-blur-md transition-all duration-200 group border border-white/5 hover:border-white/20 hover:scale-105 hover:shadow-lg"
+        >
+          <i
+            class="fa-solid fa-xmark text-xl group-hover:rotate-90 transition-transform duration-300"
+          ></i>
+        </button>
+
+        <iframe
+          id="youtubeIframe"
+          class="w-full h-full bg-black"
+          src=""
+          title="YouTube video player"
+          frameborder="0"
+          allow="
+            accelerometer;
+            autoplay;
+            clipboard-write;
+            encrypted-media;
+            gyroscope;
+            picture-in-picture;
+          "
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- Logout ka Modal  -->
+    <div
+      id="logoutModal"
+      class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none"
+    >
+      <div
+        id="logoutModalCard"
+        class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-all duration-300 border border-gray-100 relative overflow-hidden"
+      >
+        <div
+          class="absolute -top-10 -right-10 w-32 h-32 bg-red-50 rounded-full blur-2xl opacity-50"
+        ></div>
+        <div
+          class="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-50 rounded-full blur-2xl opacity-50"
+        ></div>
+
+        <div class="relative z-10 text-center">
+          <div
+            class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm"
+          >
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </div>
+
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Log Out?</h3>
+          <p class="text-sm text-gray-500 mb-6">
+            Are you sure you want to sign out? You will need to login again to
+            access your courses.
+          </p>
+
+          <div class="flex gap-3">
+            <button
+              onclick="closeLogoutModal()"
+              class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="confirmLogout()"
+              class="flex-1 py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-md shadow-red-200 transition-all hover:shadow-lg text-sm flex items-center justify-center gap-2"
+            >
+              <span>Yes, Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="js/script.js"></script>
+    <!-- <script src="js/new.js"></script> -->
+  </body>
+</html>

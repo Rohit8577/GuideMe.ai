@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GuideMe.AI - Create Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#8B5CF6",
+            primaryDark: "#7C3AED",
+            bgLight: "#F3F4F6",
+          },
+          fontFamily: {
+            sans: ["Poppins", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .input-line {
+      transition: border-color 0.3s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-bgLight min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-5xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+    <div
+      class="w-full md:w-5/12 bg-gradient-to-br from-violet-600 to-fuchsia-600 p-10 text-white flex flex-col justify-between relative overflow-hidden">
+      <div class="absolute top-[-50px] left-[-50px] w-32 h-32 bg-white opacity-10 rounded-full"></div>
+      <div class="absolute bottom-[-20px] right-[-20px] w-48 h-48 bg-white opacity-10 rounded-full"></div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10">
+      </div>
+
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 text-2xl font-bold mb-2">
+          <div class="w-10 h-10 bg-white text-violet-600 rounded-lg flex items-center justify-center shadow-lg">
+            H
+          </div>
+          <span>GuideMe.AI</span>
+        </div>
+        <p class="text-violet-100 text-sm opacity-80">
+          Join the Learning Revolution
+        </p>
+      </div>
+
+      <div class="relative z-10 my-10">
+        <h2 class="text-3xl font-bold mb-4">Start Your Journey 🚀</h2>
+        <p class="text-violet-100 mb-6">
+          Create personalized courses, track your progress, and master new
+          skills with the power of AI.
+        </p>
+
+        <div class="flex gap-2">
+          <div class="h-1 w-8 bg-white rounded-full"></div>
+          <div class="h-1 w-2 bg-white/50 rounded-full"></div>
+          <div class="h-1 w-2 bg-white/50 rounded-full"></div>
+        </div>
+      </div>
+
+      <div class="relative z-10 text-sm opacity-70">
+        Already a member?
+        <a href="login.html" class="underline font-bold hover:text-white">Log In</a>
+      </div>
+    </div>
+
+    <div class="w-full md:w-7/12 p-8 md:p-12">
+      <div class="text-center md:text-left mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Create Account</h2>
+        <p class="text-gray-500 mt-1 text-sm">
+          Fill in your details to get started.
+        </p>
+      </div>
+
+      <form id="signupForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+          <label class="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Full Name</label>
+          <input type="text" id="name"
+            class="input-line w-full py-2 bg-transparent border-b border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary focus:border-b-2"
+            placeholder="Name" required />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Email Address</label>
+          <input type="email" id="email"
+            class="input-line w-full py-2 bg-transparent border-b border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary focus:border-b-2"
+            placeholder="Email" required />
+        </div>
+
+        <div>
+          <label class="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">School / College</label>
+          <input type="text" id="class"
+            class="input-line w-full py-2 bg-transparent border-b border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary focus:border-b-2"
+            placeholder="e.g. B.Tech CS" required />
+        </div>
+
+        <div>
+          <label class="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+            Interested Topic
+          </label>
+
+          <select id="interest"
+            class="input-line w-full py-2 bg-transparent border-b border-gray-300 text-gray-900 focus:outline-none focus:border-primary focus:border-b-2 cursor-pointer"
+            required>
+            <option value="" disabled selected>Select your interest</option>
+
+            <option value="Web Development">Web Development</option>
+            <option value="Artificial Intelligence">
+              Artificial Intelligence (AI/ML)
+            </option>
+            <option value="Data Science">Data Science</option>
+            <option value="App Development">Mobile App Development</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Password</label>
+          <input type="password" id="password"
+            class="input-line w-full py-2 bg-transparent border-b border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary focus:border-b-2"
+            placeholder="Password" required />
+        </div>
+
+        <div class="md:col-span-2 flex items-center gap-2 mt-2">
+          <input type="checkbox" id="terms" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            required />
+          <label for="terms" class="text-xs text-gray-500">
+            I agree to the
+            <a href="#" class="text-primary hover:underline">Terms of Service</a>
+            and
+            <a href="#" class="text-primary hover:underline">Privacy Policy</a>.
+          </label>
+        </div>
+
+        <div class="md:col-span-2 mt-4">
+          <button type="submit"
+            class="w-full py-3.5 bg-gray-900 hover:bg-black text-white font-bold rounded-full shadow-lg transition-all transform active:scale-95 tracking-wide">
+            REGISTER ACCOUNT
+          </button>
+        </div>
+      </form>
+
+      <p class="text-center mt-6 text-gray-500 text-sm">
+        Already have an account?
+        <a href="login.html" class="text-primary font-bold hover:underline">Log In</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="signupErrorModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div id="signupErrorCard"
+      class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-all duration-300 border border-gray-100 relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-24 h-24 bg-violet-50 rounded-full blur-xl opacity-60"></div>
+      <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-red-50 rounded-full blur-xl opacity-60"></div>
+
+      <div class="relative z-10 text-center">
+        <div
+          class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm animate-bounce">
+          <i class="fa-solid fa-user-xmark"></i>
+        </div>
+
+        <h3 class="text-xl font-bold text-gray-800 mb-1">Signup Failed</h3>
+
+        <p id="signupErrorMessage" class="text-sm text-gray-500 mb-6 leading-relaxed font-medium">
+          Email already exists. Please try logging in.
+        </p>
+
+        <button onclick="closeSignupError()"
+          class="w-full py-2.5 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl shadow-lg shadow-gray-200 transition-all hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
+          <span>Try Again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/signup.js"></script>
+</body>
+
+</html>
