@@ -307,6 +307,57 @@ const createOutline = async (req, res) => {
     }
 };
 
+const generateMoreContent = async (req, res) => {
+    try {
+        const { title, current_explanation } = req.body;
+
+        console.log(title)
+        console.log(current_explanation)
+
+        if (!title || !current_explanation) {
+            return res.status(400).json({ error: "Give Title And Explaination" });
+        }
+
+        console.log(`Deep diving into topic: ${title}`);
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        // Prompt ekdam crisp rakha hai taaki AI purana repeat na kare
+        const prompt = `
+            You are an expert AI Course Instructor. 
+            The user wants a deeper dive into the subtopic: "${title}".
+            
+            They have already read this explanation:
+            """${current_explanation}"""
+            
+            Your task is to CONTINUE the explanation. 
+            - DO NOT repeat what is already written.
+            - Provide advanced insights, practical real-world examples, or edge cases.
+            - Use clear formatting with HTML tags (<p>, <strong>, <ul>, <li>).
+            - Keep the tone engaging and educational (around 150-200 words).
+            
+            Return ONLY a valid JSON object in this exact structure:
+            {
+                "new_content": "<p>Your generated continuation here...</p>"
+            }
+        `;
+
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+                responseMimeType: "application/json" // Strict JSON mode on
+            }
+        });
+
+        const data = JSON.parse(result.response.text());
+        res.json(data);
+
+    } catch (error) {
+        console.error("Load More Generation Error:", error);
+        res.status(500).json({ error: "AI thak gaya bro, thodi der baad try kar." });
+    }
+};
+
 module.exports = {
     getAllCourses,
     getCourseById,
@@ -314,5 +365,6 @@ module.exports = {
     generateCourse,
     toggleChapterProgress,
     getSuggestions,
-    createOutline
+    createOutline,
+    generateMoreContent
 };

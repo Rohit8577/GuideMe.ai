@@ -11,6 +11,8 @@ export let tempCustomTopics = "";
 let topicsArray = [];
 let currentOutlineData = null;
 let editModeChapters = {};
+
+
 export async function generateOutline() {
     const topic = document.getElementById('courseTopic').value.trim();
     const chapters = document.getElementById('numChapters').value;

@@ -5,7 +5,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "hexsmith_super_secret_key_change_this";
+const JWT_SECRET = process.env.JWT_SECRET || "guideMe_super_secret_key_change_this";
 
 const authenticateToken = (req, res, next) => {
     const token = req.cookies.token; // Read token from cookie

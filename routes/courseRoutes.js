@@ -27,6 +27,7 @@ router.delete('/courses/:id', authenticateToken, courseController.deleteCourse);
 router.post('/generate-course', authenticateToken, courseController.generateCourse);
 router.post('/suggest', courseController.getSuggestions);
 router.post('/create-outline', authenticateToken, courseController.createOutline);
+router.post('/generate-more-content', authenticateToken, courseController.generateMoreContent)
 
 // --- PROGRESS TOGGLE ---
 router.put('/courses/:id/chapters/:chapterIndex/toggle', authenticateToken, courseController.toggleChapterProgress);

@@ -43,6 +43,8 @@ window.sendMessage = sendMessage
 
 
 
+
+
 // 3. INITIALIZATION
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchUserInfo();
