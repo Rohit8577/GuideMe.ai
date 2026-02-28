@@ -125,12 +125,33 @@
             </div>
           </div>
 
-          <button
-            type="submit"
-            class="w-full py-3.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-full shadow-lg transition-all transform active:scale-95 tracking-wide mt-4"
-          >
-            LOGIN
-          </button>
+          <div class="relative mt-4">
+  <button
+    type="button"
+    onclick="toggleLoginDropdown()"
+    class="w-full py-3.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-full shadow-lg transition-all transform active:scale-95 tracking-wide flex items-center justify-center gap-2"
+  >
+    LOGIN 
+    <i class="fa-solid fa-chevron-down text-sm"></i>
+  </button>
+
+  <div id="loginDropdown"
+    class="hidden absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+    
+    <button type="submit"
+      onclick="setRole('user')"
+      class="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium">
+      Login as User
+    </button>
+
+    <button type="submit"
+      onclick="setRole('admin')"
+      class="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium border-t">
+      Login as Admin
+    </button>
+  </div>
+</div>
+          
         </form>
 
         <div class="my-6 flex items-center">
