@@ -251,6 +251,11 @@ ReadMeimage/theory.png">
 👨‍💻 Author
 
 Dhiraj
+Rohit
+Devansh Patel
+Harsh Yadav
+Gaurav Yaduvanshi
+
 
 GitHub:
 👉 https://github.com/dhirajhack6
