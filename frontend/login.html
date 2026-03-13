@@ -85,6 +85,32 @@
             Please enter your details to continue.
           </p>
         </div>
+        <!-- Yeh toggle bar hai -->
+        <div
+          class="flex p-1 bg-gray-100 rounded-2xl mb-8 relative border border-gray-200"
+        >
+          <button
+            type="button"
+            id="userBtn"
+            onclick="toggleRole('user')"
+            class="flex-1 py-2.5 text-xs font-bold z-10 transition-colors text-primary"
+          >
+            LOGIN USER
+          </button>
+          <button
+            type="button"
+            id="adminBtn"
+            onclick="toggleRole('admin')"
+            class="flex-1 py-2.5 text-xs font-bold z-10 transition-colors text-gray-400"
+          >
+            LOGIN ADMIN
+          </button>
+          <!-- Yeh white box hai jo slide karega -->
+          <div
+            id="roleIndicator"
+            class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300"
+          ></div>
+        </div>
 
         <form id="loginForm" class="space-y-6">
           <div class="relative">
@@ -125,33 +151,12 @@
             </div>
           </div>
 
-          <div class="relative mt-4">
-  <button
-    type="button"
-    onclick="toggleLoginDropdown()"
-    class="w-full py-3.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-full shadow-lg transition-all transform active:scale-95 tracking-wide flex items-center justify-center gap-2"
-  >
-    LOGIN 
-    <i class="fa-solid fa-chevron-down text-sm"></i>
-  </button>
-
-  <div id="loginDropdown"
-    class="hidden absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-    
-    <button type="submit"
-      onclick="setRole('user')"
-      class="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium">
-      Login as User
-    </button>
-
-    <button type="submit"
-      onclick="setRole('admin')"
-      class="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium border-t">
-      Login as Admin
-    </button>
-  </div>
-</div>
-          
+          <button
+            type="submit"
+            class="w-full py-3.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-full shadow-lg transition-all transform active:scale-95 tracking-wide mt-4"
+          >
+            LOGIN
+          </button>
         </form>
 
         <div class="my-6 flex items-center">
@@ -164,8 +169,10 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <button onclick="googleLogin()"
-  class="flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+          <button
+            onclick="googleLogin()"
+            class="flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+          >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               class="w-5 h-5"
@@ -234,54 +241,80 @@
     </div>
 
     <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithPopup 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBGauNhTL5q8SaE8zEtcw_uElq_FMVF9kQ",
-    authDomain: "guideme-217f7.firebaseapp.com",
-    projectId: "guideme-217f7",
-    appId: "1:410767259502:web:63e69c2de8cf36d844337f"
-  };
+      const firebaseConfig = {
+        apiKey: "AIzaSyBGauNhTL5q8SaE8zEtcw_uElq_FMVF9kQ",
+        authDomain: "guideme-217f7.firebaseapp.com",
+        projectId: "guideme-217f7",
+        appId: "1:410767259502:web:63e69c2de8cf36d844337f",
+      };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
 
-  window.googleLogin = async function () {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      window.googleLogin = async function () {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
 
-      const idToken = await user.getIdToken();
+          const idToken = await user.getIdToken();
 
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ token: idToken })
-      });
+          const res = await fetch("/api/auth/google", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token: idToken }),
+          });
 
-      const data = await res.json();
+          const data = await res.json();
 
-      if (res.ok) {
-        window.location.href = "/";
-      } else {
-        alert(data.error || "Google Login Failed");
-      }
-
-    } catch (error) {
-      console.error(error);
-      alert("Login Failed ❌");
-    }
-  };
-</script>
+          if (res.ok) {
+            window.location.href = "/";
+          } else {
+            alert(data.error || "Google Login Failed");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Login Failed ❌");
+        }
+      };
+    </script>
 
     <script src="js/login.js"></script>
+    <script>
+      let currentRole = "user";
+
+      function toggleRole(role) {
+        currentRole = role;
+        const userBtn = document.getElementById("userBtn");
+        const adminBtn = document.getElementById("adminBtn");
+        const indicator = document.getElementById("roleIndicator");
+        const submitBtn = document.querySelector('button[type="submit"]');
+
+        if (role === "user") {
+          indicator.style.left = "4px";
+          userBtn.classList.add("text-primary");
+          userBtn.classList.remove("text-gray-400");
+          adminBtn.classList.add("text-gray-400");
+          adminBtn.classList.remove("text-primary");
+          submitBtn.innerText = "LOGIN AS USER";
+        } else {
+          indicator.style.left = "calc(50% + 0px)";
+          adminBtn.classList.add("text-primary");
+          adminBtn.classList.remove("text-gray-400");
+          userBtn.classList.add("text-gray-400");
+          userBtn.classList.remove("text-primary");
+          submitBtn.innerText = "LOGIN AS ADMIN";
+        }
+      }
+    </script>
   </body>
 </html>
