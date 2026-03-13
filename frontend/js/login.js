@@ -75,6 +75,16 @@ function showError(message) {
     });
 }
 
+
+function toggleLoginDropdown() {
+  document.getElementById("loginDropdown").classList.toggle("hidden");
+}
+
+function setRole(role) {
+  localStorage.setItem("loginRole", role);
+}
+
+
 // Close Error Modal
 function closeErrorModal() {
     const modal = document.getElementById("errorModal");
@@ -90,3 +100,4 @@ function closeErrorModal() {
         modal.classList.add("hidden");
     }, 300);
 }
+
