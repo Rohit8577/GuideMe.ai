@@ -28,6 +28,8 @@ router.post('/generate-course', authenticateToken, courseController.generateCour
 router.post('/suggest', courseController.getSuggestions);
 router.post('/create-outline', authenticateToken, courseController.createOutline);
 router.post('/generate-more-content', authenticateToken, courseController.generateMoreContent)
+router.post('/generate-specific-topic', authenticateToken, courseController.generateSpecificTopic)
+router.post('/regenerate-explanation', authenticateToken, courseController.regenerateExplanation)
 
 // --- PROGRESS TOGGLE ---
 router.put('/courses/:id/chapters/:chapterIndex/toggle', authenticateToken, courseController.toggleChapterProgress);
