@@ -20,6 +20,7 @@ const courseSchema = new mongoose.Schema({
     chapters: [{
         chapter_title: String,
         isCompleted: { type: Boolean, default: false },
+        timeSpent: { type: Number, default: 0 },
         subtopics: [{
             title: String,
             explanation: String,

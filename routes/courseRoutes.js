@@ -30,6 +30,8 @@ router.post('/create-outline', authenticateToken, courseController.createOutline
 router.post('/generate-more-content', authenticateToken, courseController.generateMoreContent)
 router.post('/generate-specific-topic', authenticateToken, courseController.generateSpecificTopic)
 router.post('/regenerate-explanation', authenticateToken, courseController.regenerateExplanation)
+router.post('/analytics/track-time', authenticateToken, courseController.analysis)
+router.get('/analytics/:courseId', authenticateToken, courseController.courseAnalysis)
 
 // --- PROGRESS TOGGLE ---
 router.put('/courses/:id/chapters/:chapterIndex/toggle', authenticateToken, courseController.toggleChapterProgress);

@@ -3,7 +3,8 @@
 // ==============================
 
 import { loadExploreSuggestions } from './dashboard.js';
-import { loadProfile } from './dashboard.js';
+import { loadProfile, loadAnalysis } from './dashboard.js';
+import { flushTimeTracker } from './coursePlayer.js';
 
 export function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -19,6 +20,9 @@ export function toggleSidebar() {
 }
 
 export function showSection(sectionId) {
+    if (sectionId !== 'learning') {
+        flushTimeTracker();
+    }
     document.querySelectorAll('.content-section').forEach(el => {
         el.classList.add('hidden');
         el.classList.remove('fade-in');
@@ -47,6 +51,9 @@ export function showSection(sectionId) {
 
     if (sectionId === 'profile') {
         loadProfile();
+    }
+    if (sectionId === 'analysis') {
+        loadAnalysis();
     }
 }
 

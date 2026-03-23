@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GuideMe.AI - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
@@ -93,55 +94,57 @@
   <body class="bg-bgLight text-textDark font-sans overflow-x-hidden">
     <!-- Tutor Chat Modal -->
     <!-- Floating Button -->
-<button
-  id="tutorToggleBtn"
-  onclick="toggleTutorChat()"
-  class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110 hover:rotate-6"
->
-  <i class="fa-solid fa-robot text-xl"></i>
-</button>
-
-<!-- Chat Box -->
-<div
-  id="tutorChat"
-  class="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-50 opacity-0 scale-95 pointer-events-none transition-all duration-300"
->
-  <!-- Header -->
-  <div class="bg-purple-600 text-white p-4 flex justify-between items-center shrink-0">
-    <h4 class="font-semibold">AI Tutor 🤖</h4>
-    <button onclick="toggleTutorChat()">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
-
-  <!-- Messages Area -->
-  <div
-    id="chatMessages"
-    class="flex-1 p-4 overflow-y-auto text-sm space-y-3 bg-gray-50"
-  >
-    <div class="text-gray-500">
-      Hi 👋 I'm your Tutor. Ask anything about your course!
-    </div>
-  </div>
-
-  <!-- Input Area -->
-  <div class="p-3 border-t flex gap-2">
-    <input
-      type="text"
-      id="chatInput"
-      placeholder="Ask something..."
-      class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
-      onkeypress="handleEnter(event)"
-      autocomplete="off"
-    />
     <button
-      onclick="sendMessage()"
-      class="bg-purple-600 text-white px-4 rounded-lg"
+      id="tutorToggleBtn"
+      onclick="toggleTutorChat()"
+      class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110 hover:rotate-6"
     >
-      Send
+      <i class="fa-solid fa-robot text-xl"></i>
     </button>
-  </div>
-</div>
+
+    <!-- Chat Box -->
+    <div
+      id="tutorChat"
+      class="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-50 opacity-0 scale-95 pointer-events-none transition-all duration-300"
+    >
+      <!-- Header -->
+      <div
+        class="bg-purple-600 text-white p-4 flex justify-between items-center shrink-0"
+      >
+        <h4 class="font-semibold">AI Tutor 🤖</h4>
+        <button onclick="toggleTutorChat()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div
+        id="chatMessages"
+        class="flex-1 p-4 overflow-y-auto text-sm space-y-3 bg-gray-50"
+      >
+        <div class="text-gray-500">
+          Hi 👋 I'm your Tutor. Ask anything about your course!
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="p-3 border-t flex gap-2">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Ask something..."
+          class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
+          onkeypress="handleEnter(event)"
+          autocomplete="off"
+        />
+        <button
+          onclick="sendMessage()"
+          class="bg-purple-600 text-white px-4 rounded-lg"
+        >
+          Send
+        </button>
+      </div>
+    </div>
 
     <div class="flex h-screen">
       <aside
@@ -196,6 +199,15 @@
                 class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
                 ><i class="fa-solid fa-compass w-5 text-center"></i>
                 <span class="hide-on-collapse font-medium">Explore</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showSection('analysis')"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+                ><i class="fa-solid fa-chart-simple w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Analysis</span></a
               >
             </li>
             <li>
@@ -690,6 +702,25 @@
               </div>
             </section>
           </div>
+        </div>
+
+        <div id="section-analysis" class="content-section hidden fade-in">
+          <div
+            class="bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl p-8 text-white shadow-xl shadow-violet-200 mb-8 relative overflow-hidden"
+          >
+            <div
+              class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full transform translate-x-1/2 -translate-y-1/2"
+            ></div>
+
+            <div class="relative z-10">
+              <h2 class="text-3xl font-bold mb-2">Learning Analytics 📊</h2>
+              <p class="text-violet-100 opacity-90">
+                Track your progress and completely destroy your weak spots.
+              </p>
+            </div>
+          </div>
+
+          <div id="analysisContent"></div>
         </div>
       </main>
     </div>

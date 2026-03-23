@@ -358,67 +358,6 @@ const generateMoreContent = async (req, res) => {
     }
 };
 
-// const generateSpecificTopic = async (req, res) => {
-//     try {
-//         // Frontend se 3 cheezein aayengi ab
-//         const { main_topic_title, current_explanation, custom_topic } = req.body;
-
-//         console.log("Main Topic:", main_topic_title);
-//         console.log("Custom Query:", custom_topic);
-
-//         // Vibe check for missing data
-//         if (!main_topic_title || !current_explanation || !custom_topic) {
-//             return res.status(400).json({ error: "Bhai data missing hai, frontend se sahi payload bhej! 🙄" });
-//         }
-
-//         console.log(`Cooking specific content for: ${custom_topic}`);
-
-//         // Model set karo
-//         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-//         // Prompt OP rakha hai taaki AI context na kho de
-//         const prompt = `
-//             You are an expert AI Course Instructor. 
-//             The user is studying the main topic: "${main_topic_title}".
-//             They have already read this explanation:
-//             """${current_explanation}"""
-            
-//             Now, the user has asked for a specific explanation or deep dive into this exact custom query/topic: 
-//             "${custom_topic}"
-            
-//             Your task is to explain this specific custom topic in the context of the main topic.
-//             - Address the user's specific query directly and accurately.
-//             - Provide advanced insights, real-world examples, or code snippets if relevant to the query.
-//             - DO NOT just repeat the old explanation.
-//             - Use clear formatting with HTML tags (<p>, <strong>, <ul>, <li>).
-//             - Keep the tone engaging, friendly, and educational (around 150-250 words).
-            
-//             Return ONLY a valid JSON object in this exact structure:
-//             {
-//                 "new_content": "<p>Your generated specific explanation here...</p>"
-//             }
-//         `;
-
-//         // API Call
-//         const result = await model.generateContent({
-//             contents: [{ role: "user", parts: [{ text: prompt }] }],
-//             generationConfig: {
-//                 responseMimeType: "application/json" // Strict JSON taaki parse me L na lage
-//             }
-//         });
-
-//         // Parse karke frontend ko bhej do
-//         const data = JSON.parse(result.response.text());
-//         res.json(data);
-
-//     } catch (error) {
-//         console.error("Specific Topic Generation Error:", error);
-//         res.status(500).json({ error: "AI ka server thoda heavy ho gaya hai, ek aur try maar le bro. 💀" });
-//     }
-// };
-
-// Upar Course model import zaroor kar lena
-// const { Course } = require('../models/Course'); 
 
 const generateSpecificTopic = async (req, res) => {
     try {
@@ -502,89 +441,6 @@ const generateSpecificTopic = async (req, res) => {
         res.status(500).json({ error: "AI ka server thoda heavy ho gaya hai, ek aur try maar le bro. 💀" });
     }
 };
-
-// const regenerateExplanation = async (req, res) => {
-//     try {
-//         const { courseId, chapterIndex, subtopicIndex, title, current_explanation, type } = req.body;
-
-//         if (!courseId || !title || !type) {
-//             return res.status(400).json({ error: "Data missing hai bro!" });
-//         }
-
-//         console.log(`Regenerating ${type} explanation for: ${title}`);
-
-//         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-//         // Prompt logic: Easy vs Detailed
-//         let toneInstructions = "";
-//         if (type === "easy") {
-//             toneInstructions = `
-//                 - Explain this like I am a 10-year-old beginner.
-//                 - Use extremely simple language, everyday analogies, and avoid heavy jargon.
-//                 - Keep it concise, clear, and easy to digest.
-//             `;
-//         } else if (type === "detailed") {
-//             toneInstructions = `
-//                 - Explain this like an advanced university lecture.
-//                 - Provide a deep dive into the mechanics, use technical terminology where appropriate.
-//                 - Include comprehensive details, nuances, and real-world implications.
-//             `;
-//         }
-
-//         const prompt = `
-//             You are an expert AI Course Instructor. 
-//             The user wants to completely rewrite the explanation for the topic: "${title}".
-            
-//             They want a "${type}" explanation.
-//             ${toneInstructions}
-            
-//             Here is the current text for context (Rewrite this entirely based on the new instructions):
-//             """${current_explanation}"""
-            
-//             Your task is to provide the NEW completely rewritten explanation.
-//             - Use clear formatting with HTML tags (<p>, <strong>, <ul>, <li>).
-//             - Do not include the title in the output, just the explanation text.
-            
-//             Return ONLY a valid JSON object in this exact structure:
-//             {
-//                 "new_content": "<p>Your generated specific explanation here...</p>"
-//             }
-//         `;
-
-//         const result = await model.generateContent({
-//             contents: [{ role: "user", parts: [{ text: prompt }] }],
-//             generationConfig: { responseMimeType: "application/json" }
-//         });
-
-//         const data = JSON.parse(result.response.text());
-//         const newAIContent = data.new_content;
-
-//         // ==========================================
-//         // 🔥 DB UPDATE LOGIC 🔥
-//         // ==========================================
-        
-//         const course = await Course.findById(courseId);
-//         if (!course) return res.status(404).json({ error: "Course not found." });
-
-//         const targetSubtopic = course.chapters[chapterIndex].subtopics[subtopicIndex];
-
-//         // Sirf main explanation overwrite kar rahe hain
-//         // targetSubtopic.specific_topics wala array safe rahega!
-//         targetSubtopic.explanation = newAIContent;
-
-//         await course.save();
-//         console.log(`Explanation regenerated (${type}) aur DB me save ho gaya! ✅`);
-
-//         res.json(data);
-
-//     } catch (error) {
-//         console.error("Regeneration Error:", error);
-//         res.status(500).json({ error: "AI thak gaya bro." });
-//     }
-// };
-
-// Upar Course model import zaroor kar lena
-// const { Course } = require('../models/Course'); 
 
 const regenerateExplanation = async (req, res) => {
     try {
@@ -694,9 +550,112 @@ const regenerateExplanation = async (req, res) => {
     }
 };
 
-module.exports = { regenerateExplanation };
+const analysis = async(req,res)=>{
+    try {
+        const { courseId, chapterIndex, timeSpent } = req.body;
+        
+        // timeSpent seconds me aa raha hai frontend se
+        if (!courseId || timeSpent == null || chapterIndex == null) {
+            return res.status(400).json({ error: "Missing data bro!" });
+        }
 
-// module.exports = { generateSpecificTopic };
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ error: "Course not found" });
+
+        // Purane time me naya time add kar do (Seconds me save ho raha hai)
+        course.chapters[chapterIndex].timeSpent = (course.chapters[chapterIndex].timeSpent || 0) + timeSpent;
+        
+        await course.save();
+        res.status(200).json({ message: "Time tracked successfully ⏱️" });
+
+    } catch (err) {
+        console.error("Time tracking error:", err);
+        res.status(500).json({ error: "Server fat gaya" });
+    }
+}
+
+const courseAnalysis = async(req,res)=>{
+    try {
+        const courseId = req.params.courseId;
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            return res.status(404).json({ error: "Course not found" });
+        }
+
+        let totalSeconds = 0;
+        let maxTime = -1;
+        let hardestModule = "None";
+        let completedCount = 0;
+
+        const labels = [];
+        const timeData = [];
+        const chapterStats = [];
+
+        // Har chapter pe loop maar ke data extract kar rahe hain
+        course.chapters.forEach((ch) => {
+            const timeInSec = ch.timeSpent || 0;
+            const timeInMins = Math.round(timeInSec / 60); // Graph/Table ke liye Mins me convert kiya
+
+            // Total time calculation
+            totalSeconds += timeInSec;
+
+            // Hardest module check (Jisme sabse zyada time laga)
+            if (timeInSec > maxTime && timeInSec > 0) {
+                maxTime = timeInSec;
+                hardestModule = ch.chapter_title;
+            }
+
+            // Completion check
+            if (ch.isCompleted) completedCount++;
+
+            // Graph Arrays
+            labels.push(ch.chapter_title);
+            timeData.push(timeInMins); 
+
+            // Table Status Logic
+            let status = "Pending";
+            if (ch.isCompleted) status = "Completed";
+            else if (timeInSec > 0) status = "In Progress";
+
+            // Table Array
+            chapterStats.push({
+                name: ch.chapter_title,
+                timeSpent: timeInMins,
+                status: status
+            });
+        });
+
+        // KPI Math Calculations
+        const totalChapters = course.chapters.length;
+        const completionPercent = totalChapters === 0 ? 0 : Math.round((completedCount / totalChapters) * 100);
+
+        // Seconds ko "Xh Ym" format me convert karna (Taaki UI pro lage)
+        const totalHours = Math.floor(totalSeconds / 3600);
+        const remainingMins = Math.floor((totalSeconds % 3600) / 60);
+        const totalTimeStr = totalHours > 0 ? `${totalHours}h ${remainingMins}m` : `${remainingMins}m`;
+
+        const avgSeconds = totalChapters === 0 ? 0 : totalSeconds / totalChapters;
+        const avgMins = Math.round(avgSeconds / 60);
+        const avgTimeStr = `${avgMins}m`;
+
+        // Frontend ko saara cooked data serve kar do
+        res.json({
+            totalTime: totalTimeStr,
+            avgTime: avgTimeStr,
+            completionPercent: completionPercent,
+            hardestModule: hardestModule,
+            labels: labels,
+            timeData: timeData,
+            chapterStats: chapterStats
+        });
+
+    } catch (error) {
+        console.error("Analytics fetch error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 
 module.exports = {
     getAllCourses,
@@ -708,5 +667,7 @@ module.exports = {
     createOutline,
     generateMoreContent,
     generateSpecificTopic,
-    regenerateExplanation
+    regenerateExplanation,
+    analysis,
+    courseAnalysis
 };

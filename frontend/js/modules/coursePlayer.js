@@ -5,6 +5,50 @@
 import { showSection } from './ui.js';
 
 export let currentCourseData = null;
+export let activeChapterIndex = null;
+export let chapterStartTime = 0;
+
+// 🔥 NAYA CODE: Time Tracker Logic
+export function flushTimeTracker() {
+    // Agar koi chapter active nahi hai, ya timer start nahi hua, toh return kar do
+    if (activeChapterIndex === null || chapterStartTime === 0 || !currentCourseData) return;
+
+    const timeSpentSeconds = Math.floor((Date.now() - chapterStartTime) / 1000);
+    const courseId = currentCourseData._id;
+    const trackedChapterIndex = activeChapterIndex; 
+
+    // Timer reset kar do taaki double entry na ho
+    chapterStartTime = 0;
+    activeChapterIndex = null;
+
+    // Agar 5 second se kam ruka hai, toh ignore karo (accidental clicks ke liye)
+    if (timeSpentSeconds < 5) return;
+
+    // Time spent seconds ko minutes me convert karna hai to kar sakte ho, par hum seconds bhejenge backend pe handle karne ke liye
+    console.log(`Sending Data: Course ${courseId}, Chapter Index ${trackedChapterIndex}, Time: ${timeSpentSeconds}s`);
+
+    // 'keepalive: true' lagaya hai taaki agar user tab close bhi kar de toh request fail na ho
+    fetch('/api/analytics/track-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            courseId: courseId, 
+            chapterIndex: trackedChapterIndex, 
+            timeSpent: timeSpentSeconds // time in seconds
+        }),
+        keepalive: true 
+    }).catch(err => console.log("Time tracking API fail:", err));
+}
+
+// 🔥 NAYA CODE: Jab user Browser ka Tab close kar de tab bhi time save ho
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        flushTimeTracker();
+    } else if (document.visibilityState === 'visible' && document.getElementById('section-learning').classList.contains('hidden') === false) {
+        // Agar user tab wapas kholta hai aur course pe hai, toh timer wapas chalu
+        chapterStartTime = Date.now();
+    }
+});
 
 export async function startCourse(id) {
     try {
@@ -204,6 +248,9 @@ export function closeVideoModal() {
 
 export function loadChapter(index) {
     if (!currentCourseData) return;
+    if (activeChapterIndex !== null && activeChapterIndex !== index) {
+        flushTimeTracker();
+    }
     const chapter = currentCourseData.chapters[index];
     const lessonTitle = document.getElementById('lesson-title');
     const lessonBody = document.getElementById('lesson-body');
@@ -347,6 +394,8 @@ export function loadChapter(index) {
         activeBtn.classList.remove('text-gray-600');
         activeBtn.classList.add('bg-violet-50', 'text-primary');
     }
+    activeChapterIndex = index;
+    chapterStartTime = Date.now();
 }
 
 window.generateMoreContent = async function (chapterIndex, subtopicIndex) {
