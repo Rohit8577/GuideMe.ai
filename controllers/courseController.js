@@ -550,27 +550,37 @@ const regenerateExplanation = async (req, res) => {
     }
 };
 
-const analysis = async(req,res)=>{
+const analysis = async (req, res) => {
     try {
         const { courseId, chapterIndex, timeSpent } = req.body;
         
-        // timeSpent seconds me aa raha hai frontend se
         if (!courseId || timeSpent == null || chapterIndex == null) {
-            return res.status(400).json({ error: "Missing data bro!" });
+            return res.status(400).json({ error: "Missing data bro! 💀" });
         }
 
         const course = await Course.findById(courseId);
-        if (!course) return res.status(404).json({ error: "Course not found" });
+        if (!course) return res.status(404).json({ error: "Course not found 🕵️‍♂️" });
 
-        // Purane time me naya time add kar do (Seconds me save ho raha hai)
-        course.chapters[chapterIndex].timeSpent = (course.chapters[chapterIndex].timeSpent || 0) + timeSpent;
+        // 🔥 Total time toh har baar add hoga (chahe 5 sec hi kyu na ruka ho)
+        course.chapters[chapterIndex].timeSpent = 
+            (course.chapters[chapterIndex].timeSpent || 0) + timeSpent;
         
+        // 🔥 Asli magic yahan hai: Visit count tabhi badhega agar user 30+ sec ruka
+        // Note: Make sure frontend se 'timeSpent' SECONDS mein aa raha ho!
+        if (timeSpent >= 30) {
+            course.chapters[chapterIndex].visitCount = 
+                (course.chapters[chapterIndex].visitCount || 0) + 1;
+        }
+        
+        // Mongoose ko batana zaroori hai ki array modify hua hai (agar nested array hai)
+        course.markModified('chapters'); 
+
         await course.save();
-        res.status(200).json({ message: "Time tracked successfully ⏱️" });
+        res.status(200).json({ message: "Analytics tracked like a pro ⏱️🔥" });
 
     } catch (err) {
         console.error("Time tracking error:", err);
-        res.status(500).json({ error: "Server fat gaya" });
+        res.status(500).json({ error: "Server fat gaya 💥" });
     }
 }
 

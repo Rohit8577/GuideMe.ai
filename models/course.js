@@ -21,6 +21,7 @@ const courseSchema = new mongoose.Schema({
         chapter_title: String,
         isCompleted: { type: Boolean, default: false },
         timeSpent: { type: Number, default: 0 },
+        visitCount: { type: Number, default: 0 },
         subtopics: [{
             title: String,
             explanation: String,
