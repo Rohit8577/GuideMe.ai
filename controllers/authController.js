@@ -2,12 +2,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/user');
 const admin = require("firebase-admin");
-const serviceAccount = require("./firebase.json"); // path check kar lena
 
+// dotenv ko upar le aaye taki env variables shuru se hi available rahein
+require('dotenv').config(); 
+
+// ✨ THE GLOW UP: Replaced hardcoded JSON with Environment Variables
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // \n handle karna zaruri hai varna private key invalid ho jayegi
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    })
 });
-require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "hexsmith_super_secret_key_change_this";
 

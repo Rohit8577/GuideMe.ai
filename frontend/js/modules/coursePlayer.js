@@ -24,6 +24,41 @@ window.addEventListener('scroll', resetIdleTimer);
 window.addEventListener('keydown', resetIdleTimer);
 window.addEventListener('click', resetIdleTimer);
 
+// ==================================
+// 🔥 SMART AI DIFFICULTY CALCULATOR 🔥
+// ==================================
+export function checkChapterDifficulty(chapterIndex) {
+    if (!currentCourseData || !currentCourseData.chapters) return null;
+
+    const chapters = currentCourseData.chapters;
+    // Sirf incomplete chapters ko filter karo jisme time spend hua hai
+    const activeChapters = chapters.filter(ch => !ch.isCompleted && (ch.timeSpent || 0) > 0);
+    
+    if (activeChapters.length === 0) return null;
+
+    // Average User Speed nikalo
+    const totalTime = activeChapters.reduce((sum, ch) => sum + (ch.timeSpent || 0), 0);
+    const avgTime = totalTime / activeChapters.length;
+
+    const currentChapter = chapters[chapterIndex];
+    if (currentChapter.isCompleted || (currentChapter.timeSpent || 0) === 0) return null;
+
+    const VISIT_WEIGHT = 0.5;
+    const DANGER_THRESHOLD = 3.0; // Apna magic number
+
+    const timeInSec = currentChapter.timeSpent || 0;
+    const visits = currentChapter.visitCount || 1;
+
+    // 🔥 THE OP SCORE FORMULA 🔥
+    const score = (timeInSec / avgTime) + (visits * VISIT_WEIGHT);
+
+    // Agar chapter hard hai, toh score return karo, warna null
+    if (score >= DANGER_THRESHOLD) {
+        return score.toFixed(2);
+    }
+    return null;
+}
+
 
 // 🔥 FIX 1: isTabSwitch parameter add kiya
 export function flushTimeTracker(isTabSwitch = false) {
@@ -160,6 +195,24 @@ export function loadChapter(index) {
         </div>`;
 
     lessonBody.innerHTML = '';
+
+    const difficultyScore = checkChapterDifficulty(index);
+    if (difficultyScore) {
+        lessonBody.innerHTML += `
+            <div class="mb-8 p-4 bg-orange-50 border border-orange-200 rounded-xl flex gap-4 items-start shadow-sm animate-pulse-once">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 mt-1">
+                    <i class="fa-solid fa-robot text-orange-500 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-orange-800 font-bold text-sm mb-1 uppercase tracking-wider">Vibe Check 🚨 (Score: ${difficultyScore})</h4>
+                    <p class="text-orange-700 text-sm leading-relaxed">
+                        Looks like you're spending a lot of time and visits on this chapter! This is a tricky topic. 
+                        Don't stress, take it slow. You can use the <strong><i class="fa-solid fa-arrows-rotate mx-1"></i>Regenerate</strong> button next to any subtopic to get an <strong>Easy Explanation</strong>!
+                    </p>
+                </div>
+            </div>
+        `;
+    }
 
     if (chapter.subtopics && chapter.subtopics.length > 0) {
         chapter.subtopics.forEach((sub, i) => {

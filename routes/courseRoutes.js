@@ -12,6 +12,9 @@ const userController = require('../controllers/userController');
 const courseController = require('../controllers/courseController');
 const communityController = require('../controllers/communityController');
 const chatController = require('../controllers/chatController');
+const analysisController = require('../controllers/analysisController');
+
+
 
 // --- USER INFO ---
 router.get('/user', authenticateToken, userController.getUserProfile);
@@ -30,8 +33,11 @@ router.post('/create-outline', authenticateToken, courseController.createOutline
 router.post('/generate-more-content', authenticateToken, courseController.generateMoreContent)
 router.post('/generate-specific-topic', authenticateToken, courseController.generateSpecificTopic)
 router.post('/regenerate-explanation', authenticateToken, courseController.regenerateExplanation)
-router.post('/analytics/track-time', authenticateToken, courseController.analysis)
-router.get('/analytics/:courseId', authenticateToken, courseController.courseAnalysis)
+
+
+
+router.post('/analytics/track-time', authenticateToken, analysisController.analysis)
+router.get('/analytics/:courseId', authenticateToken, analysisController.courseAnalysis)
 
 // --- PROGRESS TOGGLE ---
 router.put('/courses/:id/chapters/:chapterIndex/toggle', authenticateToken, courseController.toggleChapterProgress);
