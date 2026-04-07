@@ -81,7 +81,7 @@ const generateCourse = async (req, res) => {
             For EACH subtopic:
             - Keep the same "title"
             - Generate:
-                - "explanation" (250 -300 words, raw HTML using <p> and <strong>)
+                - "explanation" (200 - 250 words, raw HTML using <p> and <strong>)
                 - "code":
                     * If topic is technical → Provide clean code without comments.
                     * If non-technical → Return null.

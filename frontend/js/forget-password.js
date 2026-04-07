@@ -23,6 +23,8 @@ document.getElementById("emailForm").addEventListener("submit", async (e) => {
             alert("OTP sent to your email!");
             // Hide Email Form, Show Reset Form
             originalOTP = data.otp;
+            console.log(data.otp)
+            console.log(originalOTP)
             document.getElementById("emailForm").classList.add("hidden");
             document.getElementById("resetForm").classList.remove("hidden");
 

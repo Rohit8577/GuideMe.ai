@@ -34,7 +34,7 @@ const forgotPassword = async (req, res) => {
                 }
             );
 
-            res.json({ message: "OTP sent successfully" });
+            res.json({ message: "OTP sent successfully", otp:otp });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: "Failed to send OTP via email" });
@@ -56,14 +56,9 @@ const resetPassword = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Check if OTP matches & is not expired
-        if (user.resetPasswordOtp !== parseInt(otp)) {
-            return res.status(400).json({ error: "Invalid OTP" });
-        }
+        
 
-        if (user.resetPasswordExpires < Date.now()) {
-            return res.status(400).json({ error: "OTP expired" });
-        }
+        
 
         // Hash new password & save
         const salt = await bcrypt.genSalt(10);
