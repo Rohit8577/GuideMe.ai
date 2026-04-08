@@ -13,6 +13,7 @@ const courseController = require('../controllers/courseController');
 const communityController = require('../controllers/communityController');
 const chatController = require('../controllers/chatController');
 const analysisController = require('../controllers/analysisController');
+const pdfController = require('../controllers/pdfController');
 
 
 
@@ -50,5 +51,9 @@ router.post('/notifications/:id/action', authenticateToken, communityController.
 
 // --- AI TUTOR ---
 router.post('/chat', authenticateToken, chatController.aiChat);
+
+// --- PDF DOWNLOAD ---
+router.get('/courses/:courseId/download/chapter/:chapterIndex', authenticateToken, pdfController.downloadChapterPdf);
+router.get('/courses/:courseId/download/full', authenticateToken, pdfController.downloadFullCoursePdf);
 
 module.exports = router;

@@ -593,3 +593,113 @@ window.toggleChapterStatus = toggleChapterStatus;
 window.startCourse = startCourse;
 window.openVideoModal = openVideoModal;
 window.closeVideoModal = closeVideoModal;
+
+// ==================================
+// 📄 PDF DOWNLOAD FUNCTIONS
+// ==================================
+
+export function togglePdfMenu() {
+    const menu = document.getElementById('pdfMenu');
+    menu.classList.toggle('hidden');
+}
+
+// Close PDF menu when clicking outside
+document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('pdfDownloadWrapper');
+    const menu = document.getElementById('pdfMenu');
+    if (wrapper && menu && !wrapper.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
+
+export async function downloadChapterPdf() {
+    if (!currentCourseData || activeChapterIndex === null) {
+        alert('Pehle koi chapter open kar bhai! 📖');
+        return;
+    }
+
+    const courseId = currentCourseData._id;
+    const chapterIdx = activeChapterIndex;
+    const chapterTitle = currentCourseData.chapters[chapterIdx].chapter_title;
+
+    // Close menu
+    document.getElementById('pdfMenu').classList.add('hidden');
+
+    // Show loading state on button
+    const btn = document.getElementById('pdfDownloadBtn');
+    const originalBtnHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span class="hidden sm:inline">Generating...</span>`;
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+
+    try {
+        const response = await fetch(`/api/courses/${courseId}/download/chapter/${chapterIdx}`);
+        
+        if (!response.ok) throw new Error('PDF generation failed');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentCourseData.title} - ${chapterTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error('Chapter PDF Download Error:', error);
+        alert('PDF download fail ho gaya! Ek baar aur try kar. 💀');
+    } finally {
+        btn.innerHTML = originalBtnHtml;
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+    }
+}
+
+export async function downloadFullCoursePdf() {
+    if (!currentCourseData) {
+        alert('Pehle course load kar bhai! 📚');
+        return;
+    }
+
+    const courseId = currentCourseData._id;
+
+    // Close menu
+    document.getElementById('pdfMenu').classList.add('hidden');
+
+    // Show loading state
+    const btn = document.getElementById('pdfDownloadBtn');
+    const originalBtnHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span class="hidden sm:inline">Generating Full PDF...</span>`;
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+
+    try {
+        const response = await fetch(`/api/courses/${courseId}/download/full`);
+        
+        if (!response.ok) throw new Error('PDF generation failed');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentCourseData.title} - Complete Course.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error('Full Course PDF Download Error:', error);
+        alert('PDF download fail ho gaya! Ek baar aur try kar. 💀');
+    } finally {
+        btn.innerHTML = originalBtnHtml;
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+    }
+}
+
+window.togglePdfMenu = togglePdfMenu;
+window.downloadChapterPdf = downloadChapterPdf;
+window.downloadFullCoursePdf = downloadFullCoursePdf;

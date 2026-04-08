@@ -7,7 +7,7 @@ import { fetchUserInfo, handleLogout, closeLogoutModal, confirmLogout, loadUserN
 import { toggleSidebar, showSection, copyCode, toggleNotifications } from './modules/ui.js';
 import { fetchAndDisplayCourses, loadExploreSuggestions, loadProfile, deleteCourse, renderDashboard, startFromSuggestion } from './modules/dashboard.js';
 import { generateOutline, confirmAndGenerate, addCustomTopic, removeCustomTopic, renderTopics, updateCounter } from './modules/courseGenerator.js';
-import { startCourse, openVideoModal, closeVideoModal, loadChapter, toggleChapterStatus, updateSidebarProgress } from './modules/coursePlayer.js';
+import { startCourse, openVideoModal, closeVideoModal, loadChapter, toggleChapterStatus, updateSidebarProgress, togglePdfMenu, downloadChapterPdf, downloadFullCoursePdf } from './modules/coursePlayer.js';
 import { openCommunityModal, closeCommunityModal, previewCommunityCourse, sendCourseRequest, checkNotifications, handleNotifAction } from './modules/community.js';
 import { toggleTutorChat, handleEnter, sendMessage } from './modules/chat.js';
 
@@ -40,6 +40,9 @@ window.removeCustomTopic = removeCustomTopic
 window.toggleTutorChat = toggleTutorChat;
 window.handleEnter = handleEnter
 window.sendMessage = sendMessage
+window.togglePdfMenu = togglePdfMenu;
+window.downloadChapterPdf = downloadChapterPdf;
+window.downloadFullCoursePdf = downloadFullCoursePdf;
 
 
 
