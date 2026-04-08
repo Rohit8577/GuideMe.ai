@@ -73,12 +73,16 @@ const courseAnalysis = async(req, res) => {
             if (ch.isCompleted) status = "Completed";
             else if (timeInSec > 0) status = "In Progress";
 
-            // Table Array (Added visits for the new UI column)
+            // Table Array (With quiz data)
             chapterStats.push({
                 name: ch.chapter_title,
                 timeSpent: timeInMins,
-                visits: ch.visitCount || 0, // Sending visit count to frontend
-                status: status
+                visits: ch.visitCount || 0,
+                status: status,
+                // 🧠 Quiz Analytics
+                quizBestScore: ch.quizBestScore || 0,
+                quizAttempts: (ch.quizAttempts || []).length,
+                quizPassed: ch.quizPassed || false
             });
         });
 
@@ -89,15 +93,15 @@ const courseAnalysis = async(req, res) => {
         const avgSeconds = activeChapters.length > 0 ? (totalSeconds / activeChapters.length) : 1; 
         
         const VISIT_WEIGHT = 0.5;
-        const DANGER_THRESHOLD = 3.0; // The threshold we discussed
+        const DANGER_THRESHOLD = 3.0;
         
         let strugglingChapters = [];
         let maxScore = -1;
-        let hardestModule = "None"; // Default if all clean
+        let hardestModule = "None";
 
         activeChapters.forEach(ch => {
             const timeInSec = ch.timeSpent || 0;
-            const visits = ch.visitCount || 1; // Default to 1 if time spent but no visit logged
+            const visits = ch.visitCount || 1;
 
             // THE OP FORMULA
             const score = (timeInSec / avgSeconds) + (visits * VISIT_WEIGHT);
@@ -122,7 +126,51 @@ const courseAnalysis = async(req, res) => {
         // Sort from highest struggle to lowest
         strugglingChapters.sort((a, b) => b.score - a.score);
 
-        // 🔹 STEP 3: Time Formatting & KPI Calculation
+        // 🔹 STEP 3: Chapter Difficulty Analysis (Time + Quiz Combined) 🧠
+        const chapterDifficulty = course.chapters.map((ch, idx) => {
+            const timeInSec = ch.timeSpent || 0;
+            const visits = ch.visitCount || 0;
+            const quizScore = ch.quizBestScore || 0;
+            const quizAttempts = (ch.quizAttempts || []).length;
+            const quizPassed = ch.quizPassed || false;
+
+            // Combined difficulty score
+            // High time + high visits + low quiz score = HARD
+            // Low time + low visits + high quiz score = EASY
+            let difficultyLevel = 'not-assessed';
+            let difficultyScore = 0;
+
+            if (quizAttempts > 0) {
+                // Quiz data available — use quiz performance as primary indicator
+                const quizDifficulty = (100 - quizScore) / 100; // 0 = aced it, 1 = bombed it
+                const attemptPenalty = Math.min(quizAttempts - 1, 3) * 0.15; // More attempts = harder 
+                difficultyScore = quizDifficulty + attemptPenalty;
+                
+                if (difficultyScore <= 0.3) difficultyLevel = 'easy';
+                else if (difficultyScore <= 0.6) difficultyLevel = 'moderate';
+                else difficultyLevel = 'difficult';
+            } else if (timeInSec > 0 && activeChapters.length > 0) {
+                // No quiz yet — use time-based heuristic
+                const timeRatio = timeInSec / avgSeconds;
+                const visitScore = visits * VISIT_WEIGHT;
+                difficultyScore = timeRatio + visitScore;
+                
+                if (difficultyScore <= 1.5) difficultyLevel = 'easy';
+                else if (difficultyScore <= 3.0) difficultyLevel = 'moderate';
+                else difficultyLevel = 'difficult';
+            }
+
+            return {
+                name: ch.chapter_title,
+                difficultyLevel: difficultyLevel,
+                difficultyScore: parseFloat(difficultyScore.toFixed(2)),
+                quizScore: quizScore,
+                quizAttempts: quizAttempts,
+                quizPassed: quizPassed
+            };
+        });
+
+        // 🔹 STEP 4: Time Formatting & KPI Calculation
         const totalChapters = course.chapters.length;
         const completionPercent = totalChapters === 0 ? 0 : Math.round((completedCount / totalChapters) * 100);
 
@@ -134,16 +182,17 @@ const courseAnalysis = async(req, res) => {
         const avgMins = Math.round(avgSeconds / 60);
         const avgTimeStr = `${avgMins}m`;
 
-        // 🔹 STEP 4: Payload bhejo frontend ko
+        // 🔹 STEP 5: Payload bhejo frontend ko
         res.json({
             totalTime: totalTimeStr,
             avgTime: avgTimeStr,
             completionPercent: completionPercent,
-            hardestModule: hardestModule, // Smartly calculated hardest module
-            strugglingChapters: strugglingChapters, // 🔥 Naya Array for UI Alerts
+            hardestModule: hardestModule,
+            strugglingChapters: strugglingChapters,
             labels: labels,
             timeData: timeData,
-            chapterStats: chapterStats
+            chapterStats: chapterStats,
+            chapterDifficulty: chapterDifficulty  // 🆕 Combined difficulty analysis
         });
 
     } catch (error) {

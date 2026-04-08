@@ -22,12 +22,31 @@ const courseSchema = new mongoose.Schema({
         isCompleted: { type: Boolean, default: false },
         timeSpent: { type: Number, default: 0 },
         visitCount: { type: Number, default: 0 },
+        
+        // 🧠 Quiz Data
+        quizAttempts: [{
+            score: Number,              // percentage e.g. 80
+            totalQuestions: Number,      // e.g. 10
+            correctAnswers: Number,     // e.g. 8
+            passed: Boolean,            // score >= 70
+            attemptedAt: { type: Date, default: Date.now }
+        }],
+        quizBestScore: { type: Number, default: 0 },
+        quizPassed: { type: Boolean, default: false },
+        
         subtopics: [{
             title: String,
             explanation: String,
             code: String,
             youtube_query: String,
-            videos: [{ title: String, thumbnail: String, url: String, duration: String }],
+            videos: [{ 
+                title: String, 
+                thumbnail: String, 
+                url: String, 
+                duration: String,
+                channel: String,
+                views: Number
+            }],
             
             // 🔥 YAHAN NAYA FIELD ADD KIYA HAI 🔥
             specific_topics: [{

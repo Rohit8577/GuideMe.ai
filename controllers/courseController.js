@@ -134,30 +134,65 @@ const generateCourse = async (req, res) => {
             return res.status(500).json({ error: "AI structure mismatch." });
         }
 
-        // 🔹 STEP 6: Fetch YouTube Videos
-        await Promise.all(
-            courseData.chapters.map(async (chapter) => {
-                await Promise.all(
-                    chapter.subtopics.map(async (subtopic) => {
-                        try {
-                            const videos = await YouTube.search(
-                                subtopic.youtube_query + " tutorial",
-                                { limit: 2 }
-                            );
+        // 🔹 STEP 6: Fetch YouTube Videos (Improved — Batched + Sorted + Fallback)
+        const YOUTUBE_FALLBACK_THUMB = 'https://placehold.co/480x360/1e1e1e/666?text=No+Preview';
+        const BATCH_SIZE = 3; // Max concurrent YouTube searches to avoid rate limiting
 
-                            subtopic.videos = videos.map(v => ({
-                                title: v.title,
-                                thumbnail: v.thumbnail.url,
+        // Collect all subtopics that need video fetching
+        const videoTasks = [];
+        courseData.chapters.forEach((chapter) => {
+            chapter.subtopics.forEach((subtopic) => {
+                videoTasks.push(subtopic);
+            });
+        });
+
+        // Process in batches of BATCH_SIZE to avoid YouTube rate-limiting
+        for (let i = 0; i < videoTasks.length; i += BATCH_SIZE) {
+            const batch = videoTasks.slice(i, i + BATCH_SIZE);
+            await Promise.all(
+                batch.map(async (subtopic) => {
+                    try {
+                        // Search with type:"video" to avoid playlists/channels
+                        let videos = await YouTube.search(
+                            subtopic.youtube_query + " tutorial",
+                            { limit: 6, type: "video", safeSearch: true }
+                        );
+
+                        // Fallback: If 0 results, try a broader query
+                        if (!videos || videos.length === 0) {
+                            const broadQuery = subtopic.title + " explained";
+                            videos = await YouTube.search(broadQuery, { 
+                                limit: 6, type: "video", safeSearch: true 
+                            });
+                        }
+
+                        if (videos && videos.length > 0) {
+                            // Sort by views (highest first) and pick top 2
+                            const sorted = videos
+                                .filter(v => v && v.url) // Remove broken entries
+                                .sort((a, b) => (b.views || 0) - (a.views || 0))
+                                .slice(0, 2);
+
+                            subtopic.videos = sorted.map(v => ({
+                                title: v.title || "Untitled Video",
+                                thumbnail: (v.thumbnail && v.thumbnail.url) 
+                                    ? v.thumbnail.url 
+                                    : YOUTUBE_FALLBACK_THUMB,
                                 url: v.url,
-                                duration: v.durationFormatted
+                                duration: v.durationFormatted || "—",
+                                channel: (v.channel && v.channel.name) ? v.channel.name : "Unknown",
+                                views: v.views || 0
                             }));
-                        } catch (err) {
+                        } else {
                             subtopic.videos = [];
                         }
-                    })
-                );
-            })
-        );
+                    } catch (err) {
+                        console.warn(`⚠️ YouTube fetch failed for: ${subtopic.title}`, err.message);
+                        subtopic.videos = [];
+                    }
+                })
+            );
+        }
 
         // 🔹 STEP 7: AI Image Generation
         const imagePrompt = (courseData.image_prompt || topic).slice(0, 100);

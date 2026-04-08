@@ -12,7 +12,21 @@ let pieChartInstance = null;
 
 export async function fetchAndDisplayCourses() {
     const grid = document.getElementById('courseGrid');
-    grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><p>Loading your courses...</p></div>`;
+    grid.innerHTML = Array(6).fill('').map((_, i) => `
+        <div class="skeleton-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full" style="animation-delay: ${i * 0.1}s">
+            <div class="h-48 skeleton"></div>
+            <div class="p-5 flex flex-col flex-1">
+                <div class="skeleton h-5 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-full mb-2"></div>
+                <div class="skeleton h-3 w-2/3 mb-6"></div>
+                <div class="mt-auto">
+                    <div class="flex justify-between mb-2"><div class="skeleton h-3 w-14"></div><div class="skeleton h-3 w-8"></div></div>
+                    <div class="skeleton h-2 w-full rounded-full mb-4"></div>
+                    <div class="skeleton h-10 w-full skeleton-rounded"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
 
     try {
         const res = await fetch('/api/courses');
@@ -102,6 +116,22 @@ export async function loadExploreSuggestions() {
     const topic = currentUser.interestedTopic || "Technology";
     label.innerText = topic;
 
+    // Skeleton loader for explore cards
+    grid.innerHTML = Array(6).fill('').map((_, i) => `
+        <div class="skeleton-card bg-white p-6 rounded-2xl border border-gray-100 flex flex-col h-full" style="animation-delay: ${i * 0.1}s">
+            <div class="skeleton w-12 h-12 skeleton-rounded mb-4"></div>
+            <div class="skeleton h-5 w-3/4 mb-3"></div>
+            <div class="skeleton h-3 w-full mb-2"></div>
+            <div class="skeleton h-3 w-5/6 mb-2"></div>
+            <div class="skeleton h-3 w-2/3 mb-6"></div>
+            <div class="flex gap-3 mb-6">
+                <div class="skeleton h-6 w-24 rounded"></div>
+                <div class="skeleton h-6 w-20 rounded"></div>
+            </div>
+            <div class="skeleton h-11 w-full skeleton-rounded"></div>
+        </div>
+    `).join('');
+
     try {
         const res = await fetch('/api/suggest', {
             method: 'POST',
@@ -127,11 +157,18 @@ export async function loadExploreSuggestions() {
 export async function loadProfile() {
     const list = document.getElementById('profileCoursesList');
 
-    // 1. Loader Start ⏳
-    list.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400">
-                        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
-                        <p>Loading your profile...</p>
-                      </div>`;
+    // 1. Skeleton Loader
+    list.innerHTML = Array(4).fill('').map((_, i) => `
+        <div class="skeleton-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-start gap-4" style="animation-delay: ${i * 0.12}s">
+            <div class="skeleton w-20 h-20 rounded-lg flex-shrink-0"></div>
+            <div class="flex-1 min-w-0 py-1">
+                <div class="skeleton h-4 w-3/4 mb-3"></div>
+                <div class="flex gap-2 mb-3"><div class="skeleton h-4 w-16 rounded"></div><div class="skeleton h-4 w-20 rounded"></div></div>
+                <div class="flex items-center gap-2"><div class="skeleton h-1.5 flex-1 rounded-full"></div><div class="skeleton h-3 w-6"></div></div>
+            </div>
+            <div class="skeleton w-8 h-8 skeleton-circle self-center"></div>
+        </div>
+    `).join('');
 
     try {
         // 2. Fetch Data from Backend (Parallel Call) 🚀
@@ -224,11 +261,53 @@ export async function loadProfile() {
 export async function loadAnalysis() {
     const container = document.getElementById('analysisContent');
 
-    // 1. Loader Start ⏳
+    // 1. Skeleton Loader for Analysis
     container.innerHTML = `
-        <div class="col-span-full py-16 flex flex-col items-center justify-center bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl text-white shadow-lg shadow-violet-200">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3"></i>
-            <p class="font-bold tracking-wide animate-pulse">Fetching your learning data...</p>
+        <div class="flex flex-col gap-6 pb-24">
+            <!-- KPI Skeleton -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                ${Array(4).fill('').map((_, i) => `
+                    <div class="skeleton-card bg-white p-4 rounded-xl border border-gray-100 shadow-sm" style="animation-delay: ${i * 0.1}s">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="skeleton w-8 h-8 skeleton-circle"></div>
+                            <div class="skeleton h-3 w-20"></div>
+                        </div>
+                        <div class="skeleton h-7 w-16 ml-11"></div>
+                    </div>
+                `).join('')}
+            </div>
+            <!-- Chart Skeleton -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="skeleton h-5 w-44"></div>
+                        <div class="skeleton h-10 w-72 skeleton-rounded"></div>
+                    </div>
+                    <div class="flex items-end gap-3 h-52 px-4">
+                        ${Array(7).fill('').map(() => `<div class="skeleton flex-1 rounded-t-md" style="height: ${Math.random() * 70 + 30}%"></div>`).join('')}
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="skeleton h-5 w-32 mb-6"></div>
+                    <div class="flex justify-center items-center h-52">
+                        <div class="skeleton w-40 h-40 skeleton-circle"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Table Skeleton -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100"><div class="skeleton h-5 w-40"></div></div>
+                <div class="p-4 space-y-3">
+                    ${Array(5).fill('').map((_, i) => `
+                        <div class="skeleton-card flex gap-4 items-center py-3 px-2" style="animation-delay: ${i * 0.08}s">
+                            <div class="skeleton h-4 flex-[2]"></div>
+                            <div class="skeleton h-4 flex-1"></div>
+                            <div class="skeleton h-4 flex-1"></div>
+                            <div class="skeleton h-6 w-20 rounded-full"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
         </div>
     `;
 
@@ -336,12 +415,27 @@ export async function loadAnalysis() {
                                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                                     <th class="p-4 font-medium">Chapter Name</th>
                                     <th class="p-4 font-medium">Time Spent</th>
+                                    <th class="p-4 font-medium">Quiz Score</th>
+                                    <th class="p-4 font-medium">Attempts</th>
                                     <th class="p-4 font-medium">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="ana-table-body" class="text-sm text-gray-700 divide-y divide-gray-100">
                                 </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- 🧠 Chapter Difficulty Analysis Section -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-brain text-violet-500"></i>
+                            Chapter Difficulty for Student
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Combined analysis of time spent, visit frequency, and quiz performance</p>
+                    </div>
+                    <div id="ana-difficulty-cards" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     </div>
                 </div>
 
@@ -377,13 +471,26 @@ window.fetchCourseAnalytics = async function (courseId) {
         // 2. Update Charts
         renderCharts(data.labels, data.timeData, data.completionPercent);
 
-        // 3. Update Table Details
+        // 3. Update Table Details (with Quiz columns)
         const tableBody = document.getElementById('ana-table-body');
         if (data.chapterStats && data.chapterStats.length > 0) {
-            tableBody.innerHTML = data.chapterStats.map(chap => `
+            tableBody.innerHTML = data.chapterStats.map(chap => {
+                // Quiz score badge
+                let quizScoreHtml = '<span class="text-gray-400">—</span>';
+                if (chap.quizAttempts > 0) {
+                    if (chap.quizPassed) {
+                        quizScoreHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">${chap.quizBestScore}% ✅</span>`;
+                    } else {
+                        quizScoreHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">${chap.quizBestScore}% ❌</span>`;
+                    }
+                }
+
+                return `
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="p-4 font-medium">${chap.name}</td>
                     <td class="p-4 text-gray-500">${chap.timeSpent} mins</td>
+                    <td class="p-4">${quizScoreHtml}</td>
+                    <td class="p-4 text-gray-500">${chap.quizAttempts > 0 ? chap.quizAttempts : '—'}</td>
                     <td class="p-4">
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
                             ${chap.status === 'Completed' ? 'bg-green-100 text-green-700' :
@@ -393,9 +500,75 @@ window.fetchCourseAnalytics = async function (courseId) {
                         </span>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         } else {
-            tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No chapters found for this course.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No chapters found for this course.</td></tr>`;
+        }
+
+        // 4. Update Chapter Difficulty Cards
+        const difficultyContainer = document.getElementById('ana-difficulty-cards');
+        if (difficultyContainer && data.chapterDifficulty && data.chapterDifficulty.length > 0) {
+            difficultyContainer.innerHTML = data.chapterDifficulty.map(ch => {
+                let diffColor, diffIcon, diffBg, diffBorder, diffLabel;
+                
+                switch (ch.difficultyLevel) {
+                    case 'easy':
+                        diffColor = 'text-emerald-700';
+                        diffBg = 'bg-emerald-50';
+                        diffBorder = 'border-emerald-200';
+                        diffIcon = 'fa-solid fa-leaf text-emerald-500';
+                        diffLabel = 'Easy for You';
+                        break;
+                    case 'moderate':
+                        diffColor = 'text-amber-700';
+                        diffBg = 'bg-amber-50';
+                        diffBorder = 'border-amber-200';
+                        diffIcon = 'fa-solid fa-bolt text-amber-500';
+                        diffLabel = 'Moderate';
+                        break;
+                    case 'difficult':
+                        diffColor = 'text-red-700';
+                        diffBg = 'bg-red-50';
+                        diffBorder = 'border-red-200';
+                        diffIcon = 'fa-solid fa-fire text-red-500';
+                        diffLabel = 'Difficult';
+                        break;
+                    default:
+                        diffColor = 'text-gray-500';
+                        diffBg = 'bg-gray-50';
+                        diffBorder = 'border-gray-200';
+                        diffIcon = 'fa-solid fa-circle-question text-gray-400';
+                        diffLabel = 'Not Assessed';
+                }
+
+                let quizInfoHtml = '';
+                if (ch.quizAttempts > 0) {
+                    quizInfoHtml = `
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-[10px] font-bold uppercase text-gray-400">Quiz:</span>
+                            <span class="text-xs font-bold ${ch.quizPassed ? 'text-emerald-600' : 'text-red-500'}">${ch.quizScore}%</span>
+                            <span class="text-[10px] text-gray-400">(${ch.quizAttempts} attempt${ch.quizAttempts > 1 ? 's' : ''})</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="${diffBg} border ${diffBorder} rounded-xl p-4 transition-all hover:shadow-md">
+                        <div class="flex items-start gap-3">
+                            <div class="w-9 h-9 rounded-lg ${diffBg} flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="${diffIcon}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-gray-800 truncate" title="${ch.name}">${ch.name}</p>
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${diffColor} ${diffBg} border ${diffBorder}">
+                                    ${diffLabel}
+                                </span>
+                                ${quizInfoHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
     } catch (err) {

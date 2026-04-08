@@ -10,6 +10,7 @@ import { generateOutline, confirmAndGenerate, addCustomTopic, removeCustomTopic,
 import { startCourse, openVideoModal, closeVideoModal, loadChapter, toggleChapterStatus, updateSidebarProgress, togglePdfMenu, downloadChapterPdf, downloadFullCoursePdf } from './modules/coursePlayer.js';
 import { openCommunityModal, closeCommunityModal, previewCommunityCourse, sendCourseRequest, checkNotifications, handleNotifAction } from './modules/community.js';
 import { toggleTutorChat, handleEnter, sendMessage } from './modules/chat.js';
+import { openQuizModal, closeQuizModal, quizPrevQuestion, quizNextQuestion, submitQuiz, retryQuiz } from './modules/quiz.js';
 
 
 // 2. BIND TO WINDOW OBJECT (For HTML inline onclick events)
@@ -43,6 +44,12 @@ window.sendMessage = sendMessage
 window.togglePdfMenu = togglePdfMenu;
 window.downloadChapterPdf = downloadChapterPdf;
 window.downloadFullCoursePdf = downloadFullCoursePdf;
+window.openQuizModal = openQuizModal;
+window.closeQuizModal = closeQuizModal;
+window.quizPrevQuestion = quizPrevQuestion;
+window.quizNextQuestion = quizNextQuestion;
+window.submitQuiz = submitQuiz;
+window.retryQuiz = retryQuiz;
 
 
 

@@ -88,6 +88,50 @@
       .hidden {
         display: none !important;
       }
+
+      /* 🦴 Skeleton Loading System */
+      .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+        background-size: 400% 100%;
+        animation: skeletonShimmer 1.4s ease infinite;
+        border-radius: 8px;
+      }
+      .skeleton-dark {
+        background: linear-gradient(90deg, #e5e7eb 25%, #d1d5db 37%, #e5e7eb 63%);
+        background-size: 400% 100%;
+        animation: skeletonShimmer 1.4s ease infinite;
+        border-radius: 8px;
+      }
+      .skeleton-violet {
+        background: linear-gradient(90deg, rgba(139,92,246,0.08) 25%, rgba(139,92,246,0.15) 37%, rgba(139,92,246,0.08) 63%);
+        background-size: 400% 100%;
+        animation: skeletonShimmer 1.4s ease infinite;
+        border-radius: 8px;
+      }
+      .skeleton-circle {
+        border-radius: 50%;
+      }
+      .skeleton-rounded {
+        border-radius: 16px;
+      }
+      @keyframes skeletonShimmer {
+        0% { background-position: 100% 50%; }
+        100% { background-position: 0 50%; }
+      }
+      /* Stagger animation for multiple skeleton items */
+      .skeleton-card:nth-child(1) { animation-delay: 0s; }
+      .skeleton-card:nth-child(2) { animation-delay: 0.15s; }
+      .skeleton-card:nth-child(3) { animation-delay: 0.3s; }
+      .skeleton-card:nth-child(4) { animation-delay: 0.45s; }
+      .skeleton-card:nth-child(5) { animation-delay: 0.6s; }
+      .skeleton-card:nth-child(6) { animation-delay: 0.75s; }
+      .skeleton-card {
+        animation: skeletonFadeIn 0.4s ease-out both;
+      }
+      @keyframes skeletonFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
   </head>
 
@@ -359,11 +403,27 @@
             id="exploreGrid"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            <div class="col-span-full text-center py-12 text-gray-400">
-              <i
-                class="fa-solid fa-wand-magic-sparkles fa-spin text-2xl mb-2"
-              ></i>
-              <p>AI is curating ideas for you...</p>
+            <!-- Initial Skeleton -->
+            <div class="skeleton-card bg-white p-6 rounded-2xl border border-gray-100">
+                <div class="skeleton w-12 h-12 skeleton-rounded mb-4"></div>
+                <div class="skeleton h-5 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-full mb-2"></div>
+                <div class="skeleton h-3 w-2/3 mb-6"></div>
+                <div class="skeleton h-11 w-full skeleton-rounded"></div>
+            </div>
+            <div class="skeleton-card bg-white p-6 rounded-2xl border border-gray-100" style="animation-delay: 0.1s">
+                <div class="skeleton w-12 h-12 skeleton-rounded mb-4"></div>
+                <div class="skeleton h-5 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-full mb-2"></div>
+                <div class="skeleton h-3 w-2/3 mb-6"></div>
+                <div class="skeleton h-11 w-full skeleton-rounded"></div>
+            </div>
+            <div class="skeleton-card bg-white p-6 rounded-2xl border border-gray-100" style="animation-delay: 0.2s">
+                <div class="skeleton w-12 h-12 skeleton-rounded mb-4"></div>
+                <div class="skeleton h-5 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-full mb-2"></div>
+                <div class="skeleton h-3 w-2/3 mb-6"></div>
+                <div class="skeleton h-11 w-full skeleton-rounded"></div>
             </div>
           </div>
         </div>
@@ -640,8 +700,21 @@
             id="profileCoursesList"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            <div class="col-span-full py-12 text-center text-gray-400">
-              <i class="fa-solid fa-spinner fa-spin text-2xl"></i> Loading...
+            <div class="skeleton-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-start gap-4">
+              <div class="skeleton w-20 h-20 rounded-lg flex-shrink-0"></div>
+              <div class="flex-1 min-w-0 py-1">
+                <div class="skeleton h-4 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-1/2 mb-3"></div>
+                <div class="skeleton h-1.5 w-full rounded-full"></div>
+              </div>
+            </div>
+            <div class="skeleton-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-start gap-4" style="animation-delay: 0.1s">
+              <div class="skeleton w-20 h-20 rounded-lg flex-shrink-0"></div>
+              <div class="flex-1 min-w-0 py-1">
+                <div class="skeleton h-4 w-3/4 mb-3"></div>
+                <div class="skeleton h-3 w-1/2 mb-3"></div>
+                <div class="skeleton h-1.5 w-full rounded-full"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -937,6 +1010,220 @@
         </div>
       </div>
     </div>
+
+    <!-- 🧠 Quiz Modal -->
+    <div
+      id="quizModal"
+      class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/70 backdrop-blur-md transition-all duration-300"
+    >
+      <div
+        id="quizModalCard"
+        class="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 relative m-4"
+      >
+        <!-- Quiz Header -->
+        <div
+          class="bg-gradient-to-r from-violet-600 to-purple-700 text-white p-6 relative overflow-hidden shrink-0"
+        >
+          <div
+            class="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full transform translate-x-1/2 -translate-y-1/2"
+          ></div>
+          <div class="relative z-10 flex justify-between items-center">
+            <div>
+              <h3 class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-brain"></i>
+                <span id="quizTitle">Chapter Quiz</span>
+              </h3>
+              <p class="text-violet-200 text-sm mt-1" id="quizSubtitle">
+                Score 70% or above to complete this chapter
+              </p>
+            </div>
+            <button
+              onclick="window.closeQuizModal()"
+              class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mt-4 flex items-center gap-3">
+            <div
+              class="flex-1 h-2 bg-white/20 rounded-full overflow-hidden"
+            >
+              <div
+                id="quizProgressBar"
+                class="h-full bg-white rounded-full transition-all duration-500 ease-out"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span
+              id="quizProgressText"
+              class="text-sm font-bold text-white/80 whitespace-nowrap"
+              >0/0</span
+            >
+          </div>
+        </div>
+
+        <!-- Quiz Body (Scrollable) -->
+        <div
+          id="quizBody"
+          class="flex-1 overflow-y-auto p-6"
+        >
+          <!-- Loading State -->
+          <div id="quizLoading" class="flex flex-col items-center justify-center py-16">
+            <div class="relative">
+              <div class="w-20 h-20 rounded-full border-4 border-violet-100 border-t-violet-600 animate-spin"></div>
+              <i class="fa-solid fa-brain text-violet-500 text-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+            </div>
+            <p class="mt-6 font-bold text-gray-700 text-lg">Generating Quiz...</p>
+            <p class="text-gray-400 text-sm mt-1">AI is crafting questions from your chapter content</p>
+          </div>
+
+          <!-- Question Container (hidden initially) -->
+          <div id="quizQuestionContainer" class="hidden">
+            <!-- Difficulty Badge -->
+            <div class="flex items-center gap-3 mb-5">
+              <span id="quizDifficultyBadge" class="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+              <span id="quizQuestionNumber" class="text-sm text-gray-400 font-medium"></span>
+            </div>
+
+            <!-- Question Text -->
+            <h4 id="quizQuestionText" class="text-lg font-bold text-gray-800 mb-6 leading-relaxed"></h4>
+
+            <!-- Options -->
+            <div id="quizOptions" class="space-y-3"></div>
+          </div>
+
+          <!-- Result Container (hidden initially) -->
+          <div id="quizResultContainer" class="hidden"></div>
+        </div>
+
+        <!-- Quiz Footer -->
+        <div
+          id="quizFooter"
+          class="p-5 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0"
+        >
+          <button
+            id="quizPrevBtn"
+            onclick="window.quizPrevQuestion()"
+            class="px-5 py-2.5 text-gray-500 font-semibold rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+            disabled
+          >
+            <i class="fa-solid fa-arrow-left"></i> Previous
+          </button>
+
+          <button
+            id="quizNextBtn"
+            onclick="window.quizNextQuestion()"
+            class="px-6 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 flex items-center gap-2"
+          >
+            Next <i class="fa-solid fa-arrow-right"></i>
+          </button>
+
+          <button
+            id="quizSubmitBtn"
+            onclick="window.submitQuiz()"
+            class="hidden px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-paper-plane"></i> Submit Quiz
+          </button>
+
+          <button
+            id="quizCloseResultBtn"
+            onclick="window.closeQuizModal()"
+            class="hidden px-6 py-2.5 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-900 transition-all shadow-lg flex items-center gap-2"
+          >
+            Close <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <button
+            id="quizRetryBtn"
+            onclick="window.retryQuiz()"
+            class="hidden px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all shadow-lg shadow-violet-200 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-rotate-right"></i> Retry Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* Quiz Option Styles */
+      .quiz-option {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+      }
+      .quiz-option:hover {
+        border-color: #8b5cf6;
+        background: #f5f3ff;
+        transform: translateX(4px);
+      }
+      .quiz-option.selected {
+        border-color: #8b5cf6;
+        background: #ede9fe;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+      }
+      .quiz-option .option-letter {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        background: #f3f4f6;
+        color: #374151;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+      }
+      .quiz-option.selected .option-letter {
+        background: #8b5cf6;
+        color: white;
+      }
+      .quiz-option .option-text {
+        font-size: 15px;
+        font-weight: 500;
+        color: #374151;
+        line-height: 1.5;
+      }
+      /* Result Styles */
+      .result-correct {
+        border-color: #22c55e !important;
+        background: #f0fdf4 !important;
+      }
+      .result-wrong {
+        border-color: #ef4444 !important;
+        background: #fef2f2 !important;
+      }
+      .result-correct .option-letter {
+        background: #22c55e !important;
+        color: white !important;
+      }
+      .result-wrong .option-letter {
+        background: #ef4444 !important;
+        color: white !important;
+      }
+      /* Score circle animation */
+      @keyframes scoreReveal {
+        from { transform: scale(0.5); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      .score-reveal { animation: scoreReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      
+      /* Confetti burst */
+      @keyframes confettiFall {
+        0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      }
+    </style>
 
     <script type="module" src="js/script.js"></script>
     <!-- <script src="js/new.js"></script> -->

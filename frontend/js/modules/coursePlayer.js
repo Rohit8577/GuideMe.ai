@@ -3,6 +3,7 @@
 // ==================================
 
 import { showSection } from './ui.js';
+import { openQuizModal } from './quiz.js';
 
 export let currentCourseData = null;
 export let activeChapterIndex = null;
@@ -106,13 +107,46 @@ document.addEventListener('visibilitychange', () => {
 
 export async function startCourse(id) {
     try {
+        // Show skeleton in sidebar immediately
+        showSection('learning');
+        document.getElementById('learning-course-title').innerHTML = '<div class="skeleton h-5 w-48"></div>';
+        const list = document.getElementById('chapter-list');
+        list.innerHTML = Array(6).fill('').map((_, i) => `
+            <li class="skeleton-card flex items-center gap-3 p-3 rounded-lg" style="animation-delay: ${i * 0.08}s">
+                <div class="skeleton w-4 h-4 skeleton-circle flex-shrink-0"></div>
+                <div class="skeleton h-3 flex-1"></div>
+            </li>
+        `).join('');
+        
+        // Show skeleton in lesson area
+        document.getElementById('lesson-title').innerHTML = '<div class="skeleton h-7 w-2/3 mb-4"></div>';
+        document.getElementById('lesson-body').innerHTML = `
+            <div class="space-y-8">
+                ${Array(3).fill('').map((_, i) => `
+                    <div class="skeleton-card" style="animation-delay: ${i * 0.15}s">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="skeleton w-8 h-8 skeleton-circle"></div>
+                            <div class="skeleton h-5 w-1/2"></div>
+                        </div>
+                        <div class="space-y-2 mb-4">
+                            <div class="skeleton h-3 w-full"></div>
+                            <div class="skeleton h-3 w-full"></div>
+                            <div class="skeleton h-3 w-5/6"></div>
+                            <div class="skeleton h-3 w-4/5"></div>
+                            <div class="skeleton h-3 w-3/4"></div>
+                        </div>
+                        <div class="skeleton h-32 w-full skeleton-rounded"></div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
         const res = await fetch(`/api/courses/${id}`);
         if (!res.ok) throw new Error("Load failed");
         const course = await res.json();
         currentCourseData = course;
 
         document.getElementById('learning-course-title').innerText = course.title;
-        const list = document.getElementById('chapter-list');
         list.innerHTML = '';
 
         course.chapters.forEach((ch, idx) => {
@@ -126,7 +160,6 @@ export async function startCourse(id) {
             list.appendChild(li);
         });
 
-        showSection('learning');
         if (course.chapters.length > 0) window.loadChapter(0);
     } catch (e) { console.log("Could not load course."); }
 }
@@ -185,8 +218,26 @@ export function loadChapter(index) {
     const lessonBody = document.getElementById('lesson-body');
 
     const isDone = chapter.isCompleted;
-    const btnClasses = isDone ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200" : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200";
-    const btnIcon = isDone ? '<i class="fa-solid fa-circle-check mr-2"></i> Completed' : '<i class="fa-regular fa-circle-check mr-2"></i> Mark as Done';
+    const quizPassed = chapter.quizPassed || false;
+    const quizBestScore = chapter.quizBestScore || 0;
+    const quizAttempts = (chapter.quizAttempts || []).length;
+
+    // Smart button state based on quiz progress
+    let btnClasses, btnIcon;
+    if (isDone && quizPassed) {
+        btnClasses = "bg-green-100 text-green-700 border-green-200 hover:bg-green-200";
+        btnIcon = `<i class="fa-solid fa-circle-check mr-2"></i> Completed (${quizBestScore}%)`;
+    } else if (!isDone && quizAttempts > 0) {
+        btnClasses = "bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200";
+        btnIcon = `<i class="fa-solid fa-rotate-right mr-2"></i> Retry Quiz (Best: ${quizBestScore}%)`;
+    } else if (isDone && !quizPassed) {
+        // Legacy completed without quiz — show as completed with option to unmark
+        btnClasses = "bg-green-100 text-green-700 border-green-200 hover:bg-green-200";
+        btnIcon = '<i class="fa-solid fa-circle-check mr-2"></i> Completed';
+    } else {
+        btnClasses = "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200";
+        btnIcon = '<i class="fa-solid fa-brain mr-2"></i> Take Quiz to Complete';
+    }
 
     lessonTitle.innerHTML = `
         <div class="flex justify-between items-start w-full pb-4 border-b border-gray-100 mb-6">
@@ -303,21 +354,46 @@ export function loadChapter(index) {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">`;
 
                 sub.videos.forEach(v => {
+                    // Format view count nicely
+                    const viewCount = v.views || 0;
+                    let viewsFormatted;
+                    if (viewCount >= 1000000) viewsFormatted = (viewCount / 1000000).toFixed(1) + 'M';
+                    else if (viewCount >= 1000) viewsFormatted = (viewCount / 1000).toFixed(1) + 'K';
+                    else viewsFormatted = viewCount.toString();
+
+                    const channelName = v.channel || 'Unknown';
+                    const fallbackThumb = 'https://placehold.co/480x360/1e1e1e/666?text=No+Preview';
+
                     html += `
-                        <div onclick="window.openVideoModal('${v.url}')" class="group cursor-pointer bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-primary transition-all shadow-sm hover:shadow-md">
-                            <div class="relative aspect-video overflow-hidden">
-                                <img src="${v.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-primary transition-all shadow-sm hover:shadow-md">
+                            <div onclick="window.openVideoModal('${v.url}')" class="cursor-pointer relative aspect-video overflow-hidden">
+                                <img src="${v.thumbnail || fallbackThumb}" 
+                                     onerror="this.src='${fallbackThumb}'" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                     loading="lazy" alt="${v.title}">
                                 
                                 <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 flex items-center justify-center transition-all">
-                                    <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                                    <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                                         <i class="fa-solid fa-play ml-1 text-sm"></i>
                                     </div>
                                 </div>
 
-                                <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded font-medium">${v.duration}</div>
+                                <div class="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded font-medium backdrop-blur-sm">${v.duration}</div>
                             </div>
                             <div class="p-3">
-                                <p class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors leading-snug">${v.title}</p>
+                                <p onclick="window.openVideoModal('${v.url}')" class="cursor-pointer text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">${v.title}</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-xs text-gray-400 min-w-0">
+                                        <span class="truncate max-w-[120px]" title="${channelName}">${channelName}</span>
+                                        <span class="text-gray-300">•</span>
+                                        <span class="whitespace-nowrap">${viewsFormatted} views</span>
+                                    </div>
+                                    <a href="${v.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" 
+                                       class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2" 
+                                       title="Open on YouTube">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>`;
                 });
@@ -557,6 +633,17 @@ window.regenerateExplanation = async function (chapterIndex, subtopicIndex, type
 
 export async function toggleChapterStatus(index) {
     if (!currentCourseData) return;
+    
+    const chapter = currentCourseData.chapters[index];
+    const isCurrentlyCompleted = chapter.isCompleted;
+
+    if (!isCurrentlyCompleted) {
+        // 🧠 QUIZ GATE: If chapter is NOT complete, open quiz modal instead of direct toggle
+        openQuizModal(parseInt(index));
+        return;
+    }
+
+    // If already completed, allow direct unmark (toggle to incomplete)
     const courseId = currentCourseData._id;
     const btn = document.querySelector(`#lesson-title button`);
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving...';

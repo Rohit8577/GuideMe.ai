@@ -14,7 +14,7 @@ const communityController = require('../controllers/communityController');
 const chatController = require('../controllers/chatController');
 const analysisController = require('../controllers/analysisController');
 const pdfController = require('../controllers/pdfController');
-
+const quizController = require('../controllers/quizController');
 
 
 // --- USER INFO ---
@@ -55,5 +55,9 @@ router.post('/chat', authenticateToken, chatController.aiChat);
 // --- PDF DOWNLOAD ---
 router.get('/courses/:courseId/download/chapter/:chapterIndex', authenticateToken, pdfController.downloadChapterPdf);
 router.get('/courses/:courseId/download/full', authenticateToken, pdfController.downloadFullCoursePdf);
+
+// --- QUIZ ---
+router.post('/quiz/generate', authenticateToken, quizController.generateQuiz);
+router.post('/quiz/submit', authenticateToken, quizController.submitQuiz);
 
 module.exports = router;
