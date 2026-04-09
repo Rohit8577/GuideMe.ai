@@ -47,6 +47,82 @@ const generateCourse = async (req, res) => {
 
         console.log(`Generating content for: ${topic}`);
 
+        // --- QUOTA CHECK LOGIC ---
+        const userObjCheck = await User.findById(req.user.id);
+        if (userObjCheck && userObjCheck.role !== 'admin') {
+            const today = new Date();
+            const lastGen = new Date(userObjCheck.lastGenerationDate);
+            
+            if (lastGen.toDateString() !== today.toDateString()) {
+                userObjCheck.dailyGenerationCount = 0;
+            }
+
+            if (userObjCheck.dailyGenerationCount >= 2) {
+                return res.status(403).json({ error: "Daily limit reached. You can only generate 2 courses per day." });
+            }
+        }
+        // --- END QUOTA CHECK ---
+
+        // --- CACHE INTERCEPT LOGIC FOR FULL COURSE ---
+        const existingCourse = await Course.findOne({ title: outline.courseTitle });
+
+        let isPerfectMatch = false;
+        if (existingCourse && existingCourse.originalOutline && existingCourse.originalOutline.chapters.length === outline.chapters.length) {
+            // Check if every chapter title matches (meaning user didn't modify the outline)
+            isPerfectMatch = existingCourse.originalOutline.chapters.every((ch, idx) => {
+                return ch.chapter_title === outline.chapters[idx].chapter_title;
+            });
+        }
+
+        if (isPerfectMatch) {
+            console.log(`⚡ CACHE HIT (FULL COURSE)! Cloning existing course for: ${topic}`);
+            
+            // Deep clone chapters to reset tracking statistics
+            const clonedChapters = existingCourse.chapters.map(ch => ({
+                chapter_title: ch.chapter_title,
+                timeSpent: 0,
+                visitCount: 0,
+                isCompleted: false,
+                subtopics: ch.subtopics.map(sub => ({
+                    title: sub.title,
+                    explanation: sub.explanation,
+                    code: sub.code,
+                    youtube_query: sub.youtube_query,
+                    videos: sub.videos // Copy arrays directly since they are static
+                }))
+            }));
+
+            const newCourse = new Course({
+                title: existingCourse.title,
+                description: existingCourse.description,
+                imageUrl: existingCourse.imageUrl,
+                icon: existingCourse.icon,
+                chapters: clonedChapters,
+                originalOutline: existingCourse.originalOutline,
+                createdBy: req.user.id
+            });
+
+            await newCourse.save();
+
+            // Track usage even on cache hit so user's activity remains logged
+            const userObj = await User.findById(req.user.id);
+            if (userObj) {
+                const today = new Date();
+                const lastGen = new Date(userObj.lastGenerationDate);
+                if (lastGen.toDateString() !== today.toDateString()) {
+                    userObj.dailyGenerationCount = 0;
+                }
+                userObj.totalAiGenerations = (userObj.totalAiGenerations || 0) + 1;
+                userObj.dailyGenerationCount = (userObj.dailyGenerationCount || 0) + 1;
+                userObj.lastGenerationDate = today;
+                userObj.lastActive = today;
+                await userObj.save();
+            }
+
+            return res.json(newCourse);
+        }
+        // --- END CACHE INTERCEPT LOGIC ---
+
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash"
         });
@@ -328,8 +404,15 @@ const generateCourse = async (req, res) => {
 
         const userObj = await User.findById(req.user.id);
         if (userObj) {
+            const today = new Date();
+            const lastGen = new Date(userObj.lastGenerationDate);
+            if (lastGen.toDateString() !== today.toDateString()) {
+                userObj.dailyGenerationCount = 0;
+            }
             userObj.totalAiGenerations = (userObj.totalAiGenerations || 0) + 1;
-            userObj.lastActive = Date.now();
+            userObj.dailyGenerationCount = (userObj.dailyGenerationCount || 0) + 1;
+            userObj.lastGenerationDate = today;
+            userObj.lastActive = today;
             await userObj.save();
         }
 
@@ -386,13 +469,68 @@ const getSuggestions = async (req, res) => {
 
 const createOutline = async (req, res) => {
     try {
-        // 1. Destructure me customTopics add kar liya
         const { topic, chapters, topicsArray } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
+        
         console.log(`Generating Outline for: ${topic}`);
         console.log(`Chapters requested: ${chapters}`);
         console.log(`Custom Topics: ${topicsArray || 'None'}`);
+
+        // --- QUOTA CHECK LOGIC ---
+        const userObj = await User.findById(req.user.id);
+        if (userObj && userObj.role !== 'admin') {
+            const today = new Date();
+            const lastGen = new Date(userObj.lastGenerationDate);
+            
+            // Check if last generation was on a previous day
+            if (lastGen.toDateString() !== today.toDateString()) {
+                userObj.dailyGenerationCount = 0;
+            }
+
+            // Enforce limit
+            if (userObj.dailyGenerationCount >= 2) {
+                return res.status(403).json({ error: "Daily limit reached. You can only generate 2 courses per day." });
+            }
+        }
+        // --- END QUOTA CHECK ---
+
+        // --- CACHE INTERCEPT LOGIC ---
+        const targetChaptersCount = chapters ? parseInt(chapters) : 5;
+        // Search for existing course with exact case-insensitive match on topic/title
+        const existingCourse = await Course.findOne({ 
+            title: { $regex: new RegExp(`^${topic}$`, 'i') } 
+        });
+
+        // Ensure course exists, length matches, and we have an outline payload stored
+        if (existingCourse && existingCourse.chapters.length === targetChaptersCount && existingCourse.originalOutline) {
+            // Optional: If topicsArray was specifically requested, check if at least one matches
+            let passesTopicCheck = true;
+            if (topicsArray) {
+                const requestedKeywords = topicsArray.toLowerCase();
+                const existingDescription = (existingCourse.description || "").toLowerCase();
+                // Simple loose proxy check
+                if (!existingDescription.includes(requestedKeywords.split(',')[0].trim())) {
+                     passesTopicCheck = false;
+                }
+            }
+
+            if (passesTopicCheck) {
+                console.log(`⚡ CACHE HIT! Returning cached outline for: ${topic}`);
+                const cachedOutline = {
+                    courseTitle: existingCourse.originalOutline.courseTitle || existingCourse.title,
+                    description: existingCourse.originalOutline.description || existingCourse.description,
+                    difficulty: "Beginner", // Generic fallback
+                    duration: "2 Hours", // Generic fallback
+                    chapters: existingCourse.originalOutline.chapters.map(ch => ({
+                        chapter_title: ch.chapter_title,
+                        topics: ch.subtopics.map(sub => sub.title)
+                    }))
+                };
+                return res.json(cachedOutline);
+            }
+        }
+        // --- END CACHE INTERCEPT ---
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         // 2. Agar user ne custom topics dale hain, toh prompt me condition daal do
         let customTopicsInstruction = "";

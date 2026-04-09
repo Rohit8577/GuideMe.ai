@@ -2,6 +2,7 @@ const { User } = require('../models/user');
 const { Course } = require('../models/course');
 const { Feedback } = require('../models/feedback');
 const { Resource } = require('../models/resource');
+const { sendQuotaAlert } = require('../utils/emailService');
 
 // =======================
 // 📊 DASHBOARD ANALYTICS
@@ -124,14 +125,22 @@ const getApiHealth = async (req, res) => {
         const quotaLeft = Math.max(0, monthlyQuota - totalUsed);
 
         // Usage Limits example structure
-        const dailyLimitPerUser = 50;
+        const dailyLimitPerUser = 2;
+
+        const usagePercent = (totalUsed / monthlyQuota) * 100;
+
+        // 🔔 Send email alert if usage crosses 80%
+        if (usagePercent >= 80) {
+            sendQuotaAlert(totalUsed, monthlyQuota);
+        }
 
         res.json({
             quotaUsed: totalUsed,
             quotaLeft: quotaLeft,
             quotaTotal: monthlyQuota,
             dailyLimitPerUser: dailyLimitPerUser,
-            health: (totalUsed / monthlyQuota) > 0.9 ? 'Warning' : 'Good'
+            usagePercent: usagePercent.toFixed(1),
+            health: usagePercent > 90 ? 'Critical' : usagePercent > 80 ? 'Warning' : 'Good'
         });
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch API Health" });

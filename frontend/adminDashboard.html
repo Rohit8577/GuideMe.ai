@@ -120,7 +120,7 @@
         <div class="p-4 border-t border-gray-100 center-on-collapse flex">
           <a
              href="#"
-             onclick="logoutAdmin()"
+             onclick="handleLogoutAdmin()"
              class="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors w-full justify-center md:justify-start"
           >
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -256,10 +256,44 @@
         
         <!-- ANALYTICS SECTION -->
         <div id="section-analytics" class="content-section hidden fade-in">
-           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8 text-center text-gray-500 py-20">
-               <i class="fa-solid fa-chart-pie text-4xl mb-4 text-violet-200"></i>
-               <h2 class="text-xl font-bold text-gray-800">Analytics Coming Soon</h2>
-               <p class="text-sm">More detailed generation charts will appear here.</p>
+           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
+               <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-100 pb-4">
+                   <div>
+                       <h2 class="text-2xl font-bold text-gray-800">API Token Usage Tracker</h2>
+                       <p class="text-sm text-gray-500">Monitor your Gemini API consumption in real-time.</p>
+                   </div>
+                   <div id="apiHealthBadge" class="mt-3 md:mt-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-600">
+                      Good
+                   </div>
+               </div>
+
+               <!-- Progress Bar -->
+               <div class="mb-8">
+                  <div class="flex justify-between items-center mb-2">
+                     <span class="text-sm font-semibold text-gray-700">Monthly Quota Usage</span>
+                     <span id="apiPercentLabel" class="text-sm font-bold text-primary">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
+                     <div id="apiProgressBar" class="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-1">An alert email is sent to the admin when usage exceeds 80%.</p>
+               </div>
+
+               <!-- Metrics Grid -->
+               <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <p class="text-xs text-gray-400 font-bold uppercase mb-1">Tokens Used</p>
+                      <h3 id="apiUsedStat" class="text-2xl font-bold text-gray-800">0</h3>
+                  </div>
+                  <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <p class="text-xs text-gray-400 font-bold uppercase mb-1">Tokens Remaining</p>
+                      <h3 id="apiLeftStat" class="text-2xl font-bold text-green-600">0</h3>
+                  </div>
+                  <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <p class="text-xs text-gray-400 font-bold uppercase mb-1">Daily Limit / Student</p>
+                      <h3 id="apiDailyLimitStat" class="text-2xl font-bold text-gray-800">2</h3>
+                  </div>
+               </div>
            </div>
         </div>
 
@@ -270,6 +304,18 @@
                 <div>
                    <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
                    <p class="text-sm text-gray-500">Monitor active users and control access manually.</p>
+                </div>
+                <!-- Search Input -->
+                <div class="mt-4 md:mt-0 relative w-full md:w-64">
+                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i class="fa-solid fa-search text-gray-400"></i>
+                   </div>
+                   <input 
+                      type="text" 
+                      id="userSearchInput" 
+                      placeholder="Search users..." 
+                      class="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                   >
                 </div>
              </div>
 
@@ -291,6 +337,46 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Logout Modal  -->
+    <div
+      id="logoutModal"
+      class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none"
+    >
+      <div
+        id="logoutModalCard"
+        class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-all duration-300 border border-gray-100 relative overflow-hidden"
+      >
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-50 rounded-full blur-2xl opacity-50"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-50 rounded-full blur-2xl opacity-50"></div>
+
+        <div class="relative z-10 text-center">
+          <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </div>
+
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Log Out?</h3>
+          <p class="text-sm text-gray-500 mb-6">
+            Are you sure you want to sign out? You will need to login again to access your admin tools.
+          </p>
+
+          <div class="flex gap-3">
+            <button
+              onclick="closeLogoutAdminModal()"
+              class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="confirmLogoutAdmin()"
+              class="flex-1 py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-md shadow-red-200 transition-all hover:shadow-lg text-sm flex items-center justify-center gap-2"
+            >
+              <span>Yes, Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -323,7 +409,29 @@
         }
       }
 
-      function logoutAdmin() {
+      function handleLogoutAdmin() {
+          const modal = document.getElementById('logoutModal');
+          const card = document.getElementById('logoutModalCard');
+          modal.classList.remove('hidden');
+          modal.classList.remove('pointer-events-none');
+          setTimeout(() => {
+              modal.classList.remove('opacity-0');
+              card.classList.remove('scale-95');
+          }, 10);
+      }
+
+      function closeLogoutAdminModal() {
+          const modal = document.getElementById('logoutModal');
+          const card = document.getElementById('logoutModalCard');
+          modal.classList.add('opacity-0');
+          card.classList.add('scale-95');
+          setTimeout(() => {
+              modal.classList.add('hidden');
+              modal.classList.add('pointer-events-none');
+          }, 300);
+      }
+
+      function confirmLogoutAdmin() {
          fetch("/api/auth/logout").then(() => {
              window.location.href = "/login";
          });

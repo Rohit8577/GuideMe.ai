@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     isBlocked: { type: Boolean, default: false },
     totalAiGenerations: { type: Number, default: 0 },
+    dailyGenerationCount: { type: Number, default: 0 },
+    lastGenerationDate: { type: Date, default: Date.now },
     lastLogin: { type: Date },
     lastActive: { type: Date, default: Date.now },
 

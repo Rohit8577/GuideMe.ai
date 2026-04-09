@@ -2,6 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchDashboardStats();
     fetchCourses();
     fetchUsers();
+
+    const searchInput = document.getElementById("userSearchInput");
+    if (searchInput) {
+        searchInput.addEventListener("keyup", function() {
+            const term = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#usersTable tr");
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? "" : "none";
+            });
+        });
+    }
 });
 
 async function fetchDashboardStats() {
@@ -24,6 +36,46 @@ async function fetchDashboardStats() {
         if (healthRes.ok) {
             const healthData = await healthRes.json();
             document.getElementById("apiQuotaStat").innerText = healthData.quotaUsed + " / " + healthData.quotaTotal;
+
+            // Populate Analytics Tracker
+            const percent = parseFloat(healthData.usagePercent) || 0;
+            const bar = document.getElementById("apiProgressBar");
+            const label = document.getElementById("apiPercentLabel");
+            const badge = document.getElementById("apiHealthBadge");
+            const usedStat = document.getElementById("apiUsedStat");
+            const leftStat = document.getElementById("apiLeftStat");
+            const dailyStat = document.getElementById("apiDailyLimitStat");
+
+            if (bar) bar.style.width = percent + "%";
+            if (label) label.innerText = percent + "%";
+            if (usedStat) usedStat.innerText = healthData.quotaUsed;
+            if (leftStat) leftStat.innerText = healthData.quotaLeft;
+            if (dailyStat) dailyStat.innerText = healthData.dailyLimitPerUser;
+
+            // Update progress bar color based on health
+            if (bar) {
+                if (percent >= 90) {
+                    bar.className = "h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-700 ease-out";
+                } else if (percent >= 80) {
+                    bar.className = "h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-700 ease-out";
+                } else {
+                    bar.className = "h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-700 ease-out";
+                }
+            }
+
+            // Update health badge
+            if (badge) {
+                if (healthData.health === 'Critical') {
+                    badge.className = "mt-3 md:mt-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-600";
+                    badge.innerText = "Critical";
+                } else if (healthData.health === 'Warning') {
+                    badge.className = "mt-3 md:mt-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-600";
+                    badge.innerText = "Warning";
+                } else {
+                    badge.className = "mt-3 md:mt-0 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-600";
+                    badge.innerText = "Good";
+                }
+            }
         }
 
     } catch (error) {
@@ -137,6 +189,15 @@ async function fetchUsers() {
 
             const isProtected = user.role === 'admin' || user.email.toLowerCase() === 'harsh@admin.com' || user.email.toLowerCase() === 'gaurav@admin.com';
 
+            let displayDaily = user.dailyGenerationCount || 0;
+            if (user.lastGenerationDate) {
+                const lastGen = new Date(user.lastGenerationDate);
+                const today = new Date();
+                if (lastGen.toDateString() !== today.toDateString()) {
+                    displayDaily = 0;
+                }
+            }
+
             tr.innerHTML = `
                 <td class="py-3 px-2">
                    <div class="flex items-center gap-3">
@@ -150,7 +211,10 @@ async function fetchUsers() {
                    </div>
                 </td>
                 <td class="py-3 px-2 font-semibold text-gray-700">
-                   ${user.totalAiGenerations || 0}
+                   <div class="flex flex-col">
+                       <span>${user.totalAiGenerations || 0}</span>
+                       <span class="text-[10px] ${displayDaily >= 2 ? 'text-red-500 font-bold' : 'text-gray-400'}">Today: ${displayDaily} / 2</span>
+                   </div>
                 </td>
                 <td class="py-3 px-2">
                    ${statusBadge}

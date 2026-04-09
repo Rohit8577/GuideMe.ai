@@ -7,23 +7,42 @@ import { currentUser } from './auth.js';
 export async function openCommunityModal() {
     const modal = document.getElementById('communityModal');
     const grid = document.getElementById('communityGrid');
+    const searchInput = document.getElementById('communitySearchInput');
     modal.classList.remove('hidden');
+    if (searchInput) searchInput.value = '';
     grid.innerHTML = '<div class="col-span-full text-center py-10"><i class="fa-solid fa-spinner fa-spin text-2xl text-primary"></i></div>';
 
     try {
         const res = await fetch('/api/community');
         const courses = await res.json();
-        grid.innerHTML = courses.map(course => `
-            <div class="bg-white p-5 rounded-xl border border-gray-200 hover:border-primary transition-all flex flex-col">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600"><i class="${course.icon}"></i></div>
-                    <span class="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500 uppercase">By ${course.createdBy ? course.createdBy.name : 'Unknown'}</span>
-                </div>
-                <h4 class="font-bold text-gray-800 mb-1 line-clamp-1">${course.title}</h4>
-                <p class="text-xs text-gray-500 mb-4 line-clamp-2">${course.description}</p>
-                <button onclick="window.previewCommunityCourse('${course._id}')" class="mt-auto w-full py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-black transition-colors">See Roadmap</button>
-            </div>`).join('');
+        renderCommunityCards(courses);
+
+        // Attach search filter
+        if (searchInput) {
+            searchInput.oninput = function () {
+                const term = this.value.toLowerCase();
+                const cards = grid.querySelectorAll('[data-community-card]');
+                cards.forEach(card => {
+                    const title = card.getAttribute('data-title') || '';
+                    card.style.display = title.includes(term) ? '' : 'none';
+                });
+            };
+        }
     } catch (err) { grid.innerHTML = '<p class="text-center text-red-500">Failed to load.</p>'; }
+}
+
+function renderCommunityCards(courses) {
+    const grid = document.getElementById('communityGrid');
+    grid.innerHTML = courses.map(course => `
+        <div data-community-card data-title="${(course.title || '').toLowerCase()}" class="bg-white p-5 rounded-xl border border-gray-200 hover:border-primary transition-all flex flex-col">
+            <div class="flex justify-between items-start mb-3">
+                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600"><i class="${course.icon}"></i></div>
+                <span class="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500 uppercase">By ${course.createdBy ? course.createdBy.name : 'Unknown'}</span>
+            </div>
+            <h4 class="font-bold text-gray-800 mb-1 line-clamp-1">${course.title}</h4>
+            <p class="text-xs text-gray-500 mb-4 line-clamp-2">${course.description}</p>
+            <button onclick="window.previewCommunityCourse('${course._id}')" class="mt-auto w-full py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-black transition-colors">See Roadmap</button>
+        </div>`).join('');
 }
 
 export function closeCommunityModal() {
