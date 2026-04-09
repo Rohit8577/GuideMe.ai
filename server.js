@@ -12,6 +12,7 @@ require('dotenv').config();
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -38,13 +39,16 @@ app.get('/', (req, res) => {
 });
 
 // Public Pages Routes (Direct Access)
+// Public Pages Routes (Direct Access)
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, './frontend', 'login.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, './frontend', 'signup.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, './frontend', 'adminDashboard.html')));
 
 
 // API Routes Registration
 app.use('/api/auth', authRoutes); // Auth routes
 app.use('/api', courseRoutes);    // Courses, Community, Notifications
+app.use('/api/admin', adminRoutes); // Admin Panel Routes
 
 app.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);

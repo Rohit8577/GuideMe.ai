@@ -17,6 +17,14 @@ const userSchema = new mongoose.Schema({
     interestedTopic: { type: String, default: '' },
     resetPasswordOtp: { type: Number },
     resetPasswordExpires: { type: Date },
+    
+    // Admin & Tracking Fields
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    isBlocked: { type: Boolean, default: false },
+    totalAiGenerations: { type: Number, default: 0 },
+    lastLogin: { type: Date },
+    lastActive: { type: Date, default: Date.now },
+
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -290,10 +290,10 @@
 
     <script src="js/login.js"></script>
     <script>
-      let currentRole = "user";
+      window.currentRole = "user";
 
       function toggleRole(role) {
-        currentRole = role;
+        window.currentRole = role;
         const userBtn = document.getElementById("userBtn");
         const adminBtn = document.getElementById("adminBtn");
         const indicator = document.getElementById("roleIndicator");

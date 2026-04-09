@@ -46,12 +46,40 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
+        const requestedRole = role || 'user'; // Defaults to user 
+        
         const user = await User.findOne({ email });
         if (!user) return res.status(401).json({ error: "User not found" });
 
+        if (user.isBlocked) {
+            return res.status(403).json({ error: "Your account is blocked by the administrator." });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: "Invalid Password" });
+
+        // Update last login
+        user.lastLogin = Date.now();
+        
+        // Dynamic admin assignment based on email just in case they weren't matched before
+        let isAdminFlag = false;
+        if (email.toLowerCase() === 'harsh@admin.com' || email.toLowerCase() === 'gaurav@admin.com') {
+            user.role = 'admin';
+            isAdminFlag = true;
+        } else if (user.role === 'admin') {
+            isAdminFlag = true;
+        }
+        
+        // Role mismatch logic
+        if (requestedRole === 'admin' && !isAdminFlag) {
+            return res.status(403).json({ error: "Access Denied: Admin credentials required." });
+        }
+        if (requestedRole === 'user' && isAdminFlag) {
+            return res.status(403).json({ error: "Please use the 'Login Admin' tab." });
+        }
+
+        await user.save();
 
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -61,8 +89,9 @@ const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.json({ message: "Login Successful", user: { name: user.name, email: user.email } });
+        res.json({ message: "Login Successful", user: { name: user.name, email: user.email, isAdmin: isAdminFlag } });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Login Failed" });
     }
 };
@@ -84,14 +113,29 @@ const googleLogin = async (req, res) => {
 
         // Agar user nahi hai to create karo
         if (!user) {
+            let role = 'user';
+            if (email.toLowerCase() === 'harsh@admin.com' || email.toLowerCase() === 'gaurav@admin.com') {
+                role = 'admin';
+            }
             user = new User({
                 name,
                 email,
-                googleId: uid
+                googleId: uid,
+                role: role,
+                lastLogin: Date.now()
             });
             await user.save();
-        } else if (!user.googleId) {
-            user.googleId = uid;
+        } else {
+            if (user.isBlocked) {
+                return res.status(403).json({ error: "Your account is blocked by the administrator." });
+            }
+            if (!user.googleId) {
+                user.googleId = uid;
+            }
+            if (email.toLowerCase() === 'harsh@admin.com' || email.toLowerCase() === 'gaurav@admin.com') {
+               user.role = 'admin';
+            }
+            user.lastLogin = Date.now();
             await user.save();
         }
 
@@ -108,9 +152,11 @@ const googleLogin = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
+        const isAdminFlag = user.role === 'admin';
+
         res.json({
             message: "Google Login Successful",
-            user: { name: user.name, email: user.email }
+            user: { name: user.name, email: user.email, isAdmin: isAdminFlag }
         });
 
     } catch (err) {

@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const YouTube = require('youtube-sr').default;
 const { Course } = require('../models/course');
+const { User } = require('../models/user');
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -134,9 +135,67 @@ const generateCourse = async (req, res) => {
             return res.status(500).json({ error: "AI structure mismatch." });
         }
 
-        // 🔹 STEP 6: Fetch YouTube Videos (Improved — Batched + Sorted + Fallback)
+        // 🔹 STEP 6: Fetch YouTube Videos (Smart — Scored + Multi-Strategy + Quality Filtered)
         const YOUTUBE_FALLBACK_THUMB = 'https://placehold.co/480x360/1e1e1e/666?text=No+Preview';
-        const BATCH_SIZE = 3; // Max concurrent YouTube searches to avoid rate limiting
+        const BATCH_SIZE = 3;
+
+        /**
+         * Smart video scoring function.
+         * Instead of just using raw views, we score videos based on:
+         *  1. Duration quality (5–20 min is ideal for educational subtopics)
+         *  2. Views score (normalized, with diminishing returns)
+         *  3. Keyword relevance (does the title contain topic keywords?)
+         */
+        const scoreVideo = (video, queryKeywords) => {
+            let score = 0;
+            const durationSec = video.duration || 0; // duration in seconds
+
+            // --- 1. Duration Score (Most Important for Ed-Tech) ---
+            // Ideal educational video: 5 to 20 minutes
+            // Penalize short clips (< 2 min — likely Shorts or previews)
+            // Penalize very long videos (> 45 min — too broad for one subtopic)
+            if (durationSec >= 300 && durationSec <= 1200) {
+                score += 50; // Perfect range (5–20 min)
+            } else if (durationSec >= 120 && durationSec < 300) {
+                score += 25; // Short but ok (2–5 min)
+            } else if (durationSec > 1200 && durationSec <= 2700) {
+                score += 15; // A bit long but could be detailed (20–45 min)
+            } else {
+                score += 0;  // Reject: too short (<2 min) or too long (>45 min)
+            }
+
+            // --- 2. Views Score (Log scale to prevent viral junk from dominating) ---
+            // Math.log prevents a 10M-view Short beating a 300K well-crafted tutorial
+            const views = video.views || 0;
+            if (views > 0) {
+                score += Math.min(Math.log10(views) * 8, 40); // Max 40 points from views
+            }
+
+            // --- 3. Keyword Relevance Score ---
+            // Check if video title contains important words from the query/topic
+            const titleLower = (video.title || '').toLowerCase();
+            let keywordHits = 0;
+            queryKeywords.forEach(kw => {
+                if (titleLower.includes(kw.toLowerCase())) keywordHits++;
+            });
+            score += Math.min(keywordHits * 5, 10); // Max 10 points from keywords
+
+            return score;
+        };
+
+        /**
+         * Build multi-strategy search queries.
+         * Different strategies for better coverage of topics.
+         */
+        const buildQueries = (subtopic, mainTopic) => {
+            const base = subtopic.youtube_query || subtopic.title;
+            return [
+                `${base} tutorial`,                          // Strategy 1: Direct tutorial
+                `${base} explained`,                         // Strategy 2: Explained style
+                `${base} ${mainTopic} course`,               // Strategy 3: Topic + course context
+                `learn ${base} for beginners`,               // Strategy 4: Beginner friendly
+            ];
+        };
 
         // Collect all subtopics that need video fetching
         const videoTasks = [];
@@ -146,43 +205,77 @@ const generateCourse = async (req, res) => {
             });
         });
 
-        // Process in batches of BATCH_SIZE to avoid YouTube rate-limiting
+        // Process in batches to avoid YouTube rate-limiting
         for (let i = 0; i < videoTasks.length; i += BATCH_SIZE) {
             const batch = videoTasks.slice(i, i + BATCH_SIZE);
+
             await Promise.all(
                 batch.map(async (subtopic) => {
                     try {
-                        // Search with type:"video" to avoid playlists/channels
-                        let videos = await YouTube.search(
-                            subtopic.youtube_query + " tutorial",
-                            { limit: 6, type: "video", safeSearch: true }
-                        );
+                        const queries = buildQueries(subtopic, topic);
+                        let allVideos = [];
 
-                        // Fallback: If 0 results, try a broader query
-                        if (!videos || videos.length === 0) {
-                            const broadQuery = subtopic.title + " explained";
-                            videos = await YouTube.search(broadQuery, { 
-                                limit: 6, type: "video", safeSearch: true 
-                            });
+                        // Try first 2 strategies, stop early if we get enough results
+                        for (const q of queries.slice(0, 2)) {
+                            try {
+                                const results = await YouTube.search(q, {
+                                    limit: 8, type: "video", safeSearch: true
+                                });
+                                if (results && results.length > 0) {
+                                    allVideos.push(...results);
+                                    if (allVideos.length >= 8) break; // Enough to work with
+                                }
+                            } catch (_) { /* Silently skip failed queries */ }
                         }
 
-                        if (videos && videos.length > 0) {
-                            // Sort by views (highest first) and pick top 2
-                            const sorted = videos
-                                .filter(v => v && v.url) // Remove broken entries
-                                .sort((a, b) => (b.views || 0) - (a.views || 0))
-                                .slice(0, 2);
+                        // Fallback: If still nothing, try remaining strategies
+                        if (allVideos.length === 0) {
+                            for (const q of queries.slice(2)) {
+                                try {
+                                    const results = await YouTube.search(q, {
+                                        limit: 8, type: "video", safeSearch: true
+                                    });
+                                    if (results && results.length > 0) {
+                                        allVideos.push(...results);
+                                        break;
+                                    }
+                                } catch (_) { /* Silently skip */ }
+                            }
+                        }
 
-                            subtopic.videos = sorted.map(v => ({
-                                title: v.title || "Untitled Video",
-                                thumbnail: (v.thumbnail && v.thumbnail.url) 
-                                    ? v.thumbnail.url 
-                                    : YOUTUBE_FALLBACK_THUMB,
-                                url: v.url,
-                                duration: v.durationFormatted || "—",
-                                channel: (v.channel && v.channel.name) ? v.channel.name : "Unknown",
-                                views: v.views || 0
-                            }));
+                        if (allVideos.length > 0) {
+                            // Extract keywords from subtopic title for relevance scoring
+                            const stopWords = new Set(['the','a','an','and','or','of','in','to','for','on','with','is','are','how']);
+                            const queryKeywords = subtopic.title
+                                .split(/\s+/)
+                                .filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()));
+
+                            // De-duplicate by video URL
+                            const uniqueMap = new Map();
+                            allVideos.forEach(v => {
+                                if (v && v.url && !uniqueMap.has(v.url)) uniqueMap.set(v.url, v);
+                            });
+                            const unique = Array.from(uniqueMap.values());
+
+                            // Filter out Shorts and broken entries,
+                            // then score and pick top 2
+                            const top2 = unique
+                                .filter(v => v.url && (v.duration || 0) >= 90) // Min 90 sec = no Shorts
+                                .map(v => ({ video: v, score: scoreVideo(v, queryKeywords) }))
+                                .sort((a, b) => b.score - a.score)
+                                .slice(0, 2)
+                                .map(({ video: v }) => ({
+                                    title: v.title || "Untitled Video",
+                                    thumbnail: (v.thumbnail && v.thumbnail.url)
+                                        ? v.thumbnail.url
+                                        : YOUTUBE_FALLBACK_THUMB,
+                                    url: v.url,
+                                    duration: v.durationFormatted || "—",
+                                    channel: (v.channel && v.channel.name) ? v.channel.name : "Unknown",
+                                    views: v.views || 0
+                                }));
+
+                            subtopic.videos = top2;
                         } else {
                             subtopic.videos = [];
                         }
@@ -232,6 +325,13 @@ const generateCourse = async (req, res) => {
         });
 
         await newCourse.save();
+
+        const userObj = await User.findById(req.user.id);
+        if (userObj) {
+            userObj.totalAiGenerations = (userObj.totalAiGenerations || 0) + 1;
+            userObj.lastActive = Date.now();
+            await userObj.save();
+        }
 
         res.json(newCourse);
 

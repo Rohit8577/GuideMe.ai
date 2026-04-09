@@ -14,10 +14,12 @@ document
         btn.classList.add("opacity-70", "cursor-not-allowed");
 
         try {
+            // grab role from the window (set by toggleRole in HTML)
+            const role = window.currentRole || 'user';
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, role }),
             });
 
             const data = await res.json();
@@ -29,7 +31,11 @@ document
                 btn.classList.add("bg-green-600");
 
                 setTimeout(() => {
-                    window.location.href = "/";
+                    if (data.user && data.user.isAdmin) {
+                        window.location.href = "/admin";
+                    } else {
+                        window.location.href = "/";
+                    }
                 }, 1000);
             } else {
                 // ERROR: Alert hata diya, Modal laga diya

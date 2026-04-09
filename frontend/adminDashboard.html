@@ -3,174 +3,332 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>GuideMe Admin Dashboard</title>
-
+    <title>GuideMe.AI - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B5CF6",
+              primaryDark: "#7C3AED",
+              bgLight: "#F3F4F6",
+              sidebarBg: "#FFFFFF",
+              textDark: "#1F2937",
+              textGray: "#6B7280",
+            },
+            fontFamily: {
+              sans: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+      .fade-in { animation: fadeIn 0.3s ease-in-out; }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .sidebar-collapsed { width: 80px !important; }
+      .sidebar-collapsed .hide-on-collapse { display: none; }
+      .sidebar-collapsed .center-on-collapse { justify-content: center; }
+      .main-expanded { margin-left: 80px !important; }
+      .hidden { display: none !important; }
+    </style>
   </head>
 
-  <body class="bg-gray-100 font-sans">
-    <div class="flex min-h-screen">
-      <!-- Sidebar -->
+  <body class="bg-bgLight text-textDark font-sans overflow-x-hidden">
+    <div class="flex h-screen">
+      <aside
+        id="sidebar"
+        class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-50 transition-all duration-300"
+      >
+        <div
+          class="p-6 flex items-center gap-3 font-bold text-xl text-gray-800 center-on-collapse"
+        >
+          <div
+            class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md flex-shrink-0"
+          >
+            A
+          </div>
+          <span class="hide-on-collapse">GuideMe Admin</span>
+        </div>
 
-      <aside class="w-64 bg-white shadow-md hidden md:block">
-        <div class="p-6 text-xl font-bold text-purple-600">GuideMe Admin</div>
-
-        <nav class="px-4 space-y-2">
-          <a class="block p-2 rounded-lg hover:bg-purple-100 cursor-pointer">
-            🏠 Dashboard
-          </a>
-
-          <a class="block p-2 rounded-lg hover:bg-purple-100 cursor-pointer">
-            👥 Users
-          </a>
-
-          <a class="block p-2 rounded-lg hover:bg-purple-100 cursor-pointer">
-            📚 Courses
-          </a>
-
-          <a class="block p-2 rounded-lg hover:bg-purple-100 cursor-pointer">
-            📊 Analytics
-          </a>
-
-          <a class="block p-2 rounded-lg hover:bg-purple-100 cursor-pointer">
-            ⚙ Settings
-          </a>
+        <nav class="flex-1 overflow-y-auto mt-4(px-2)">
+          <ul class="space-y-1 px-2">
+            <li>
+              <a
+                href="#"
+                onclick="showAdminSection('dashboard')"
+                id="link-dashboard"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 bg-violet-50 text-primary rounded-xl transition-colors center-on-collapse"
+              >
+                <i class="fa-solid fa-grip w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showAdminSection('users')"
+                id="link-users"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+              >
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Users</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showAdminSection('courses')"
+                id="link-courses"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+              >
+                <i class="fa-solid fa-book-open w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Courses</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="showAdminSection('analytics')"
+                id="link-analytics"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-violet-50 hover:text-primary rounded-xl transition-colors center-on-collapse"
+              >
+                <i class="fa-solid fa-chart-simple w-5 text-center"></i>
+                <span class="hide-on-collapse font-medium">Analytics</span>
+              </a>
+            </li>
+          </ul>
         </nav>
+
+        <div class="p-4 border-t border-gray-100 center-on-collapse flex">
+          <a
+             href="#"
+             onclick="logoutAdmin()"
+             class="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors w-full justify-center md:justify-start"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="hide-on-collapse font-medium">Logout</span>
+          </a>
+        </div>
       </aside>
 
-      <!-- Main -->
+      <main
+        id="mainContent"
+        class="flex-1 ml-64 p-8 transition-all duration-300"
+      >
+        <header class="flex justify-between items-center mb-8 relative">
+          <button
+            onclick="toggleSidebar()"
+            class="text-gray-500 hover:text-gray-800 text-xl p-2"
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="flex items-center gap-4">
+             <div class="bg-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                Admin Secure Mode
+             </div>
+          </div>
+        </header>
 
-      <div class="flex-1 p-6">
-        <!-- Header -->
+        <div id="section-dashboard" class="content-section fade-in">
+          <div
+            class="bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl p-8 text-white shadow-xl shadow-violet-200 mb-8 relative overflow-hidden"
+          >
+             <div
+              class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full transform translate-x-1/2 -translate-y-1/2"
+             ></div>
+             <div class="relative z-10">
+                <h1 class="text-3xl font-bold mb-2">Welcome Back, Admin</h1>
+                <p class="text-violet-100 opacity-90">Manage users, courses and analytics from your dashboard.</p>
+             </div>
+          </div>
 
-        <div class="flex justify-between items-center mb-6">
-          <h1 class="text-2xl font-semibold">Admin Dashboard</h1>
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition cursor-pointer" onclick="showAdminSection('users')">
+              <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl">
+                 <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                 <p class="text-gray-400 text-xs font-bold uppercase">Total Users</p>
+                 <h2 class="text-2xl font-bold text-gray-800" id="totalUsersStat">0</h2>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition cursor-pointer" onclick="showAdminSection('courses')">
+              <div class="w-12 h-12 rounded-full bg-violet-50 text-primary flex items-center justify-center text-xl">
+                 <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <div>
+                 <p class="text-gray-400 text-xs font-bold uppercase">Courses</p>
+                 <h2 class="text-2xl font-bold text-gray-800" id="totalCoursesStat">0</h2>
+              </div>
+            </div>
 
-          <div class="bg-purple-600 text-white px-4 py-1 rounded-full">
-            Admin
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+              <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-xl">
+                 <i class="fa-solid fa-user-check"></i>
+              </div>
+              <div>
+                 <p class="text-gray-400 text-xs font-bold uppercase">Active Students (24H)</p>
+                 <h2 class="text-2xl font-bold text-gray-800" id="activeUsersStat">0</h2>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+              <div class="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center text-xl">
+                 <i class="fa-solid fa-server"></i>
+              </div>
+              <div>
+                 <p class="text-gray-400 text-xs font-bold uppercase">Estimated API Quota</p>
+                 <h2 class="text-xl font-bold text-gray-800" id="apiQuotaStat">0 / 0</h2>
+                 <p class="text-[10px] text-gray-400">Based on system req cache.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Highlights Table for Dashboard -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 mt-6">
+             <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Recent Platform Activity</h3>
+                <button onclick="showAdminSection('courses')" class="text-sm font-semibold text-primary hover:text-primaryDark">View All</button>
+             </div>
+             
+             <div class="overflow-x-auto">
+               <table class="w-full text-left border-collapse">
+                 <thead>
+                   <tr class="border-b border-gray-200 text-xs text-gray-400 uppercase tracking-wider">
+                     <th class="py-3 px-2 font-semibold">Course Title</th>
+                     <th class="py-3 px-2 font-semibold">Student Generator</th>
+                     <th class="py-3 px-2 font-semibold">Difficulty</th>
+                     <th class="py-3 px-2 font-semibold text-center">Action</th>
+                   </tr>
+                 </thead>
+                 <tbody id="recentCourseTable" class="text-sm text-gray-700 divide-y divide-gray-100">
+                    <!-- Dynamic -->
+                 </tbody>
+               </table>
+             </div>
           </div>
         </div>
 
-        <!-- Welcome Banner -->
-
-        <div
-          class="bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white p-6 rounded-xl mb-6 shadow"
-        >
-          <h2 class="text-xl font-semibold">Welcome Back, Admin</h2>
-
-          <p class="text-sm opacity-90">
-            Manage users, courses and analytics from your dashboard.
-          </p>
-        </div>
-
-        <!-- Stats Cards -->
-
-        <div class="grid md:grid-cols-4 gap-6 mb-8">
-          <div
-            class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
-          >
-            <p class="text-gray-500 text-sm">Total Users</p>
-
-            <h2 class="text-2xl font-bold text-purple-600">1245</h2>
-          </div>
-
-          <div
-            class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
-          >
-            <p class="text-gray-500 text-sm">Courses</p>
-
-            <h2 class="text-2xl font-bold text-purple-600">32</h2>
-          </div>
-
-          <div
-            class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
-          >
-            <p class="text-gray-500 text-sm">Active Students</p>
-
-            <h2 class="text-2xl font-bold text-purple-600">876</h2>
-          </div>
-
-          <div
-            class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
-          >
-            <p class="text-gray-500 text-sm">Revenue</p>
-
-            <h2 class="text-2xl font-bold text-purple-600">₹1,25,000</h2>
+        <!-- COURSES SECTION -->
+        <div id="section-courses" class="content-section hidden fade-in">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+             <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Manage Content Library</h3>
+             </div>
+             
+             <div class="overflow-x-auto">
+               <table class="w-full text-left border-collapse">
+                 <thead>
+                   <tr class="border-b border-gray-200 text-xs text-gray-400 uppercase tracking-wider">
+                     <th class="py-3 px-2 font-semibold">Course Title</th>
+                     <th class="py-3 px-2 font-semibold">Student Generator</th>
+                     <th class="py-3 px-2 font-semibold">Difficulty</th>
+                     <th class="py-3 px-2 font-semibold text-center">Action</th>
+                   </tr>
+                 </thead>
+                 <tbody id="courseTable" class="text-sm text-gray-700 divide-y divide-gray-100">
+                    <!-- Dynamic -->
+                 </tbody>
+               </table>
+             </div>
           </div>
         </div>
+        
+        <!-- ANALYTICS SECTION -->
+        <div id="section-analytics" class="content-section hidden fade-in">
+           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8 text-center text-gray-500 py-20">
+               <i class="fa-solid fa-chart-pie text-4xl mb-4 text-violet-200"></i>
+               <h2 class="text-xl font-bold text-gray-800">Analytics Coming Soon</h2>
+               <p class="text-sm">More detailed generation charts will appear here.</p>
+           </div>
+        </div>
 
-        <!-- Courses Table -->
+        <!-- USERS SECTION -->
+        <div id="section-users" class="content-section hidden fade-in">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
+             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-100 pb-4">
+                <div>
+                   <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
+                   <p class="text-sm text-gray-500">Monitor active users and control access manually.</p>
+                </div>
+             </div>
 
-        <div class="bg-white rounded-xl shadow p-6">
-          <h2 class="text-lg font-semibold mb-4">Manage Courses</h2>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead>
-                <tr class="border-b text-gray-600">
-                  <th class="py-2">Course</th>
-                  <th class="py-2">Category</th>
-                  <th class="py-2">Students</th>
-                  <th class="py-2">Action</th>
-                </tr>
-              </thead>
-
-              <tbody id="courseTable">
-                <tr class="border-b">
-                  <td class="py-2">Python Fundamentals</td>
-                  <td>Programming</td>
-                  <td>240</td>
-                  <td>
-                    <button
-                      onclick="deleteCourse(this)"
-                      class="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-
-                <tr class="border-b">
-                  <td class="py-2">Data Science Basics</td>
-                  <td>AI</td>
-                  <td>180</td>
-                  <td>
-                    <button
-                      onclick="deleteCourse(this)"
-                      class="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-
-                <tr class="border-b">
-                  <td class="py-2">Web Development</td>
-                  <td>Development</td>
-                  <td>300</td>
-                  <td>
-                    <button
-                      onclick="deleteCourse(this)"
-                      class="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+             <div class="overflow-x-auto">
+               <table class="w-full text-left border-collapse">
+                 <thead>
+                   <tr class="border-b border-gray-200 text-xs text-gray-400 uppercase tracking-wider">
+                     <th class="py-3 px-2 font-semibold">User Details</th>
+                     <th class="py-3 px-2 font-semibold">Generations</th>
+                     <th class="py-3 px-2 font-semibold">Status</th>
+                     <th class="py-3 px-2 font-semibold text-center">Action</th>
+                   </tr>
+                 </thead>
+                 <tbody id="usersTable" class="text-sm text-gray-700 divide-y divide-gray-100">
+                    <!-- Dynamic -->
+                 </tbody>
+               </table>
+             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
 
     <script>
-      function deleteCourse(button) {
-        let row = button.closest("tr");
+      function showAdminSection(sectionId) {
+          document.querySelectorAll('.content-section').forEach(el => {
+              el.classList.add('hidden');
+          });
+          document.querySelectorAll('.sidebar-link').forEach(el => {
+              el.classList.remove('bg-violet-50', 'text-primary');
+              el.classList.add('text-gray-500');
+          });
 
-        row.remove();
+          document.getElementById('section-' + sectionId).classList.remove('hidden');
+          const activeLink = document.getElementById('link-' + sectionId);
+          if (activeLink) {
+              activeLink.classList.remove('text-gray-500');
+              activeLink.classList.add('bg-violet-50', 'text-primary');
+          }
+      }
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        sidebar.classList.toggle('sidebar-collapsed');
+        if (sidebar.classList.contains('sidebar-collapsed')) {
+            mainContent.classList.remove('ml-64');
+            mainContent.classList.add('ml-20');
+        } else {
+            mainContent.classList.add('ml-64');
+            mainContent.classList.remove('ml-20');
+        }
+      }
+
+      function logoutAdmin() {
+         fetch("/api/auth/logout").then(() => {
+             window.location.href = "/login";
+         });
       }
     </script>
+    <script src="js/adminDashboard.js"></script>
   </body>
 </html>
